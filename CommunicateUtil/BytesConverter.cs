@@ -225,30 +225,7 @@ namespace CommunicateUtil
                     value = GetT(bytes, startIndex, endianType, valueType);
                 }
             }
-            //if (valueType.IsEnum)
-            //{
-            //    value = (int)GetT<byte>(bytes, startIndex, endianType);
-            //}
-            //else if (valueType == typeof(byte))
-            //{
-            //    value = GetT<byte>(bytes, startIndex, endianType);
-            //}
-            //else if (valueType == typeof(int))
-            //{
-            //    value = GetT<int>(bytes, startIndex, endianType);
-            //}
-            //else if (valueType == typeof(float))
-            //{
-            //    value = GetT<float>(bytes, startIndex, endianType);
-            //}
-            //else if (valueType == typeof(double))
-            //{
-            //    value = GetT<double>(bytes, startIndex, endianType);
-            //}
-            //else if (valueType == typeof(short))
-            //{
-            //    value = GetT<double>(bytes, startIndex, endianType);
-            //}
+          
             return value;
         }
 
