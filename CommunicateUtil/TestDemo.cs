@@ -108,6 +108,7 @@ namespace CommunicateUtil
 
         [CommunicateArrtibute(OrderIndex = 16,ArrayLength = "11")]
         public string StringValue { get; set; }
+
     }
     internal class TestDemo
     {
@@ -131,6 +132,7 @@ namespace CommunicateUtil
             obj.StringValue = "张图帅";
             obj.EnumValue = EnumType.item3;
             var datas = obj.GetBytes();
+
 
 
             TestCommunicateObj obj_1 = new TestCommunicateObj();

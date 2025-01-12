@@ -143,6 +143,11 @@ namespace CommunicateUtil
             return result;
         }
 
+        public static T BytesToValueEx<T>(this byte[] bytes, EndianType endianType)
+        {
+            return BytesToValue<T>(bytes, endianType);
+        }
+
         /// <summary>
         /// 将bytes数组根据不同大小端模式转换成值类型数据
         /// </summary>
