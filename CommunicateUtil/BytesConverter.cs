@@ -4,6 +4,7 @@
 //  感谢您的下载和使用
 //------------------------------------------------------------------------------
 using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -218,7 +219,8 @@ namespace CommunicateUtil
         /// <param name="endianType"></param>
         /// <param name="valueType"></param>
         /// <returns></returns>
-        private static object GetValueType(List<byte> bytes, int startIndex, EndianType endianType, Type valueType)
+        private static object GetValueType(List<byte> bytes, int startIndex, 
+            EndianType endianType, Type valueType)
         {
             object value = null;
             if (valueType.IsValueType)
@@ -230,7 +232,6 @@ namespace CommunicateUtil
                     value = GetT(bytes, startIndex, endianType, valueType);
                 }
             }
-          
             return value;
         }
 

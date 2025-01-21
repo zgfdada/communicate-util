@@ -43,6 +43,11 @@ namespace CommunicateUtil
         /// 通讯字段或属性的数组或集合长度类型(适用于协议中数组长度后紧跟数组内容的情况)
         /// </summary>
         public Type AutoLengthType { get; set; }
+        
+        /// <summary>
+        /// 枚举值类型(根据枚举在协议中所占的长度决定)
+        /// </summary>
+        public Type EnumValueType { get; set; }
 
         /// <summary>
         /// 通讯字段或属性的字节编码类型
