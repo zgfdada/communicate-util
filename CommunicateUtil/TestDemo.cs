@@ -6,6 +6,7 @@
 //------------------------------------------------------------------------------
 using CommunicateUtil.BytesDataAdapters.ArrayValueTypeAdapters;
 using CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters;
+using CommunicateUtil.BytesDataAdapters.StringTypeAdapters;
 using CommunicateUtil.BytesDataAdapters.ValueTypeAdapters;
 using System;
 using System.Collections.Generic;
@@ -164,6 +165,7 @@ namespace CommunicateUtil
             // ************************解释器测试***********************
             //值类型及其相关数组集合的测试
             int lengh;
+            
             EnumType enumType = EnumType.item5;
             var b = ValueTypeAdapter.GetBytes(out lengh,enumType, EndianType.Big,typeof(uint));
             var dsd = b.Select(r => { if (r == 4) return r = 6; return r; }).ToArray();
@@ -173,6 +175,10 @@ namespace CommunicateUtil
             object obj = (byte)5;
             byte[] bytearray = ValueTypeAdapter.GetBytes(out lengh, obj, EndianType.Big);
             object obj_2 = ValueTypeAdapter.GetValue<byte>(out lengh, bytearray, EndianType.Big);
+
+            obj = "张图帅" as string;
+            bytearray = StringTypeAdapter.GetBytes(obj.ToString(), 8);
+            obj_2 = StringTypeAdapter.GetString(bytearray, 8);
             obj = (short)55;
             bytearray = ValueTypeAdapter.GetBytes(out lengh, obj, EndianType.Big);
             obj_2 = ValueTypeAdapter.GetValue<short>(out lengh, bytearray, EndianType.Big);
@@ -200,6 +206,7 @@ namespace CommunicateUtil
             commArrObj.enumList = new EnumType[] { EnumType.item5, EnumType.item4 };
             commArrObj.aa = 1;
             commArrObj.bb = 2;
+            commArrObj.str = "张图超帅";
             commArrObj.EnumType = EnumType.item5;
             commArrObj.EnumType_1 = (EnumType)6;
             commArrObj.arrObj_1 = new TestCommArrObj_1[]
@@ -225,6 +232,9 @@ namespace CommunicateUtil
         [ValidCheckArrtibute("CommunicateUtil", "ValidateIsFalse")]
         [CommunicateArrtibute(OrderIndex = 2)]
         public short bb { get; set; }
+
+        [CommunicateArrtibute(OrderIndex = 2.1f,ArrayLength = "32")]
+        public string str { get; set; }
 
         [CommunicateArrtibute(OrderIndex = 3)]
         public EnumType EnumType { get; set; }

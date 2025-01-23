@@ -51,6 +51,7 @@
     <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ArrayAdapter.cs" />
     <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ListAdapter.cs" />
     <Compile Include="BytesDataAdapters\BaseCommObjAdapters\BaseCommObjAdapter.cs" />
+    <Compile Include="BytesDataAdapters\StringTypeAdapters\StringTypeAdapter.cs" />
     <Compile Include="BytesDataAdapters\ValueTypeAdapters\EnumAdapter.cs" />
     <Compile Include="BytesDataAdapters\ValueTypeAdapters\ValueTypeAdapter.cs" />
     <Compile Include="CommunicateArrtibute.cs" />

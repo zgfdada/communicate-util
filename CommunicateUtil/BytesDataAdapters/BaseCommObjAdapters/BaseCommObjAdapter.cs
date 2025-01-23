@@ -1,4 +1,5 @@
 ﻿using CommunicateUtil.BytesDataAdapters.ArrayValueTypeAdapters;
+using CommunicateUtil.BytesDataAdapters.StringTypeAdapters;
 using CommunicateUtil.BytesDataAdapters.ValueTypeAdapters;
 using System;
 using System.Collections;
@@ -28,7 +29,7 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
         /// <param name="commArb"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static byte[] PropGetBytesLogic<T>(out int lengh,T value,CommunicateArrtibute commArb)
+        public static byte[] PropGetBytesLogic<T>(out int lengh,T value,CommunicateArrtibute commArb,BaseCommunicateArrtObject classObj = null)
         {
             List<byte> bytes = new List<byte>();
             lengh = 0;
@@ -59,6 +60,13 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
                 bytes.AddRange(ArrayAdapter.GetBytes(out lengh, value, commArb.EndianType, commArb.EnumEndType));
                 lengh += bufferlenght;
 
+            }
+            else if(valueType == typeof(string))
+            {
+                int bufferLengh;
+                int arraylengh = GetArrayLengh(classObj, commArb, null, out bufferLengh);
+                bytes.AddRange(StringTypeAdapter.GetBytes(value as string, arraylengh));
+                lengh += arraylengh;
             }
             else if(valueType.BaseType == typeof(BaseCommunicateArrtObject))
             {
@@ -234,6 +242,13 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
                     , arrt.EnumEndType);
 
                 lengh += bufferLengh;
+            }
+            else if (propertyType == typeof(string))
+            {
+                int bufferLengh;
+                int arraylengh = GetArrayLengh(classObj, arrt, null, out bufferLengh);
+                propValue = StringTypeAdapter.GetString(bytes.ToArray(), arraylengh);
+                lengh += arraylengh;
             }
             else
             {
