@@ -94,8 +94,8 @@ namespace CommunicateUtil
             if (method == null)
                 throw new InvalidOperationException($"Validation method '{validationAttr.MethodName}' not found in assembly '{validationAttr.AssemblyName}'.");
 
-            var propertyValue = property.GetValue(target);
-            var result = method.Invoke(null, new object[] { propertyValue });
+            //var propertyValue = property.GetValue(target);
+            var result = method.Invoke(null, new object[] { target });
 
             if (result is bool && !(bool)result)
             {
