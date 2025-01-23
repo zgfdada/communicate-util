@@ -39,6 +39,7 @@ namespace CommunicateUtil
     [AttributeUsage(AttributeTargets.Method)]
     public class ValidationMethodAttribute : Attribute
     {
+        
     }
 
     public static class ValidationUtil

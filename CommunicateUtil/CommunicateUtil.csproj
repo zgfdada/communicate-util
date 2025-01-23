@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>CommunicateUtil.Valid_TestDemo</StartupObject>
+    <StartupObject>CommunicateUtil.TestDemo_2</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -48,6 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BytesConverter.cs" />
+    <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ArrayAdapter.cs" />
+    <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ListAdapter.cs" />
+    <Compile Include="BytesDataAdapters\BaseCommObjAdapters\BaseCommObjAdapter.cs" />
+    <Compile Include="BytesDataAdapters\ValueTypeAdapters\EnumAdapter.cs" />
+    <Compile Include="BytesDataAdapters\ValueTypeAdapters\ValueTypeAdapter.cs" />
     <Compile Include="CommunicateArrtibute.cs" />
     <Compile Include="TestDemo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -57,5 +62,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

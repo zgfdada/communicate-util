@@ -3,6 +3,7 @@
 //  文档地址：https://gitee.com/zgf211998110/communicate-util.git
 //  感谢您的下载和使用
 //------------------------------------------------------------------------------
+using CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace CommunicateUtil
         /// <summary>
         /// 通讯字段或属性的排序索引
         /// </summary>
-        public int OrderIndex { get; set; } = 0;
+        public float OrderIndex { get; set; } = 0;
 
         /// <summary>
         /// 通讯字段或属性在字节流数据中的起始索引
@@ -45,9 +46,9 @@ namespace CommunicateUtil
         public Type AutoLengthType { get; set; }
         
         /// <summary>
-        /// 枚举值类型(根据枚举在协议中所占的长度决定)
+        /// 枚举结束类型(根据枚举在协议中所占的长度决定)
         /// </summary>
-        public Type EnumValueType { get; set; }
+        public Type EnumEndType { get; set; }
 
         /// <summary>
         /// 通讯字段或属性的字节编码类型
@@ -78,19 +79,19 @@ namespace CommunicateUtil
         /// <summary>
         /// 编码索引定义
         /// </summary>
-        public Dictionary<int, CommPropIndexDefine> GetBytesIndexDefine;
+        public Dictionary<float, CommPropIndexDefine> GetBytesIndexDefine = new Dictionary<float, CommPropIndexDefine>();
 
         /// <summary>
         /// 解码索引定义
         /// </summary>
-        public Dictionary<int, CommPropIndexDefine> GetSelfIndexDefine;
+        public Dictionary<float, CommPropIndexDefine> GetSelfIndexDefine = new Dictionary<float, CommPropIndexDefine>();
 
         /// <summary>
         /// 获取通讯特征对象的起始索引
         /// </summary>
         /// <param name="attr"></param>
         /// <returns></returns>
-        public int GetStartIndex(CommunicateArrtibute attr, Dictionary<int, CommPropIndexDefine> define)
+        public int GetStartIndex(CommunicateArrtibute attr, Dictionary<float, CommPropIndexDefine> define)
         {
             int startIndex = 0;
             if (attr.StartIndex != -1)
@@ -117,7 +118,7 @@ namespace CommunicateUtil
         /// </summary>
         public void Init_GetBytesIndexDefine()
         {
-            GetBytesIndexDefine = new Dictionary<int, CommPropIndexDefine>();
+            GetBytesIndexDefine = new Dictionary<float, CommPropIndexDefine>();
 
             List<byte> data = new List<byte>();
             var props = this.GetType().GetProperties().Where(a => a.GetCustomAttributes().Count(b => b.GetType() == typeof(CommunicateArrtibute)) > 0);
@@ -125,7 +126,7 @@ namespace CommunicateUtil
             foreach (var prop in props)
             {
                 var attr = prop.GetCustomAttribute<CommunicateArrtibute>();
-                int orderIndex = attr.OrderIndex;
+                float orderIndex = attr.OrderIndex;
                 CommPropIndexDefine commPropIndexDefine = new CommPropIndexDefine();
                 int startIndex = this.GetStartIndex(attr,this.GetBytesIndexDefine);
                 commPropIndexDefine.StartIndex = startIndex;
@@ -142,7 +143,9 @@ namespace CommunicateUtil
         /// <param name="datas"></param>
         public virtual void GetSelf(List<byte> datas)
         {
-            this.GetComArtObjSelf(datas);
+            //this.GetComArtObjSelf(datas);
+            int lengh;
+            this.ClassGetValueLogic(out lengh, datas);
         }
 
         /// <summary>
@@ -151,7 +154,9 @@ namespace CommunicateUtil
         /// <returns></returns>
         public virtual byte[] GetBytes()
         {
-            return this.GetComArtObjSelfBytes();
+            ////return this.GetComArtObjSelfBytes();
+            int lengh;
+            return this.ClassGetBytesLogic(out lengh);
         }
     }
 
@@ -344,7 +349,7 @@ namespace CommunicateUtil
             {
                 var arrt = arrts.Single(a => a.GetType() == typeof(CommunicateArrtibute)) as CommunicateArrtibute;
                 Type propertyType = propertyInfo.PropertyType;
-                int orderIndex = arrt.OrderIndex;
+                float orderIndex = arrt.OrderIndex;
                 int startIndex = classObj.GetStartIndex(arrt,classObj.GetSelfIndexDefine);
                 int arrayLength = 0;
                 int bytesLength = classObj.GetPropBytesLength_GetSelf(propertyInfo.Name,datas.ToArray(),startIndex,out arrayLength);
@@ -378,7 +383,7 @@ namespace CommunicateUtil
         /// <param name="datas"></param>
         public static void GetComArtObjSelf(this BaseCommunicateArrtObject classObj, List<byte> datas)
         {
-            classObj.GetSelfIndexDefine = new Dictionary<int, CommPropIndexDefine>();
+            classObj.GetSelfIndexDefine = new Dictionary<float, CommPropIndexDefine>();
             var props = classObj.GetType().GetProperties().Where(a => a.GetCustomAttributes().Count(b => b.GetType() == typeof(CommunicateArrtibute)) > 0);
             props = props.OrderBy(a => a.GetCustomAttribute<CommunicateArrtibute>().OrderIndex).ToArray();
             foreach (var prop in props)
