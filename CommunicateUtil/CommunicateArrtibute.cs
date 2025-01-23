@@ -31,17 +31,19 @@ namespace CommunicateUtil
         public float OrderIndex { get; set; } = 0;
 
         /// <summary>
-        /// 通讯字段或属性在字节流数据中的起始索引
+        /// 通讯字段或属性在字节流数据中的起始索引,食用于上一属性结束所有与当前属性起始索引不相同的情况
         /// </summary>
         public int StartIndex { get; set; } = -1;
 
         /// <summary>
         /// 通讯字段或属性的数组或集合长度(适用于协议中数组长度后未紧跟数组内容的情况)
+        /// 固定长度时填写数字，动态长度时填写动态长度所在的属性名称
         /// </summary>
         public string ArrayLength { get; set; } = "-1";
 
         /// <summary>
         /// 通讯字段或属性的数组或集合长度类型(适用于协议中数组长度后紧跟数组内容的情况)
+        /// 数据解析器会根据类型进行解析及编码(不用在类中的属性中再做定义了)
         /// </summary>
         public Type AutoLengthType { get; set; }
         
