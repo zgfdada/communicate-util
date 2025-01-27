@@ -90,9 +90,9 @@ namespace CommunicateUtil
                 throw new InvalidOperationException($"Property '{propertyName}' does not have a ValidCheckArrtibute.");
 
             // 从缓存中获取校验方法
-            var method = GetValidationMethod(validationAttr.GetType().Assembly.FullName, validationAttr.MethodName);
+            var method = GetValidationMethod(target.GetType().Assembly.FullName, validationAttr.MethodName);
             if (method == null)
-                throw new InvalidOperationException($"Validation method '{validationAttr.MethodName}' not found in assembly '{validationAttr.AssemblyName}'.");
+                throw new InvalidOperationException($"Validation method '{validationAttr.MethodName}' not found in assembly '{target.GetType().Assembly.FullName}'.");
 
             //var propertyValue = property.GetValue(target);
             var result = method.Invoke(null, new object[] { target });

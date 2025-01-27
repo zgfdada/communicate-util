@@ -272,15 +272,18 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
             //属性进行排序
             props = props.OrderBy(a => a.GetCustomAttribute<CommunicateArrtibute>().OrderIndex).ToList();
 
-            //移除所有有效性验证为false的属性
-            props.RemoveAll(a => a.GetCustomAttributes()
-            .Count(b => b.GetType() == typeof(ValidCheckArrtibute)) > 0
-                && classObj.ValidateProperty(a.Name) == false);
-
             lengh = 0;
             foreach (var prop in props)
             {
                 var propertyType = prop.PropertyType;
+                if (prop.GetCustomAttributes()
+                    .Count(b => b.GetType() == typeof(ValidCheckArrtibute)) > 0)
+                {
+                    if (classObj.ValidateProperty(prop.Name) == false)
+                    {
+                        continue;
+                    }
+                }
                 CommPropIndexDefine indexDefine = new CommPropIndexDefine();
                 CommunicateArrtibute attr = prop.GetCustomAttribute<CommunicateArrtibute>();
                 int startIndex = 0;
