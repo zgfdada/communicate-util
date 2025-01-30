@@ -44,9 +44,13 @@ namespace CommunicateUtil
 
     public static class ValidationUtil
     {
-
+        // 存储验证方法的并发字典，键为 "AssemblyName.MethodName"
         private static readonly ConcurrentDictionary<string, MethodInfo> ValidationMethods = new ConcurrentDictionary<string, MethodInfo>();
 
+        /// <summary>
+        /// 加载所有已加载程序集中的验证方法。
+        /// 遍历每个类型并缓存带有 ValidationMethodAttribute 特性的公开静态方法。
+        /// </summary>
         public static void LoadValidationMethods()
         {
             // 获取所有已加载的程序集
@@ -61,7 +65,7 @@ namespace CommunicateUtil
                         if (validationAttr != null)
                         {
                             // 缓存方法，使用 "AssemblyName.MethodName" 作为键
-                            string key = $"{assembly.GetName()}.{method.Name}";
+                            string key = $"{assembly.GetName().Name}.{method.Name}";
                             ValidationMethods.TryAdd(key, method);
                         }
                     }
@@ -69,11 +73,25 @@ namespace CommunicateUtil
             }
         }
 
+        /// <summary>
+        /// 根据程序集名称和方法名称获取缓存的验证方法。
+        /// </summary>
+        /// <param name="assemblyName">程序集名称</param>
+        /// <param name="methodName">方法名称</param>
+        /// <returns>找到的 MethodInfo；如果未找到，则返回 null。</returns>
         public static MethodInfo GetValidationMethod(string assemblyName, string methodName)
         {
             string key = $"{assemblyName}.{methodName}";
             return ValidationMethods.TryGetValue(key, out var methodInfo) ? methodInfo : null;
         }
+
+        /// <summary>
+        /// 验证目标对象的指定属性。
+        /// </summary>
+        /// <typeparam name="T">目标对象的类型</typeparam>
+        /// <param name="target">目标对象</param>
+        /// <param name="propertyName">要验证的属性名</param>
+        /// <returns>如果验证成功返回 true，否则返回 false。</returns>
         public static bool ValidateProperty<T>(this T target, string propertyName)
         {
             if (target == null)
@@ -90,9 +108,9 @@ namespace CommunicateUtil
                 throw new InvalidOperationException($"Property '{propertyName}' does not have a ValidCheckArrtibute.");
 
             // 从缓存中获取校验方法
-            var method = GetValidationMethod(target.GetType().Assembly.FullName, validationAttr.MethodName);
+            var method = GetValidationMethod(target.GetType().Assembly.GetName().Name, validationAttr.MethodName);
             if (method == null)
-                throw new InvalidOperationException($"Validation method '{validationAttr.MethodName}' not found in assembly '{target.GetType().Assembly.FullName}'.");
+                throw new InvalidOperationException($"Validation method '{validationAttr.MethodName}' not found in assembly '{target.GetType().Assembly.ManifestModule.Name}'.");
 
             //var propertyValue = property.GetValue(target);
             var result = method.Invoke(null, new object[] { target });
@@ -107,39 +125,33 @@ namespace CommunicateUtil
         }
     }
 
-
-
-    public class User
+    /// <summary>
+    /// 有效性管理类
+    /// </summary>
+    public class ValiadManager
     {
-        [ValidCheckArrtibute("CommunicateUtil", "ValidateEmail")]
-        public string Email { get; set; }
+        #region 单例模式
+        private static volatile ValiadManager instance;
+        private static readonly object syncRoot = new object();
 
-        [ValidCheckArrtibute("CommunicateUtil", "ValidateNum")]
-        public object Test { get; set; }
+        private ValiadManager() { ValidationUtil.LoadValidationMethods(); }
 
-        [ValidationMethod()]
-        public static bool ValidateEmail(string email)
+        public static ValiadManager Instance()
         {
-            return email.Contains("@");
+            if (instance == null)
+            {
+                lock (syncRoot)
+                {
+                    if (instance == null)
+                    {
+                        instance = new ValiadManager();
+                    }
+                }
+            }
+            return instance;
         }
+        #endregion
     }
 
-    internal class Valid_TestDemo
-    {
-        [ValidationMethod]
-        public static bool ValidateNum(object obj)
-        {
-            return int.TryParse(obj.ToString(), out _);
-        }
-        static void Main(string[] args)
-        {
-            ValidationUtil.LoadValidationMethods();
-            var user = new User { Email = "test%example.com" ,Test = "654%65"};
-            bool isValid = user.ValidateProperty("Email");
-            isValid = user.ValidateProperty("Test");
-            user = new User { Email = "test@example.com", Test = 123456 };
-            isValid = user.ValidateProperty("Email");
-            isValid = user.ValidateProperty("Test");
-        }
-    }
+
 }

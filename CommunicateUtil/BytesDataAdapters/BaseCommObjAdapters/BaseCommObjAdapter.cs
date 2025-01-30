@@ -90,6 +90,7 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
         /// <returns></returns>
         public static byte[] ClassGetBytesLogic<T>(this T value,out int lengh) where T : BaseCommunicateArrtObject
         {
+            ValiadManager.Instance();
             lengh = 0;
             List<byte> bytes = new List<byte> { };
 
@@ -109,45 +110,48 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
                 && value.ValidateProperty(a.Name) == false);
 
             //根据属性顺序进行bytes的编码
-            for(int i = 0;i<props.Count;i++)
+            if(props.Count > 0)
             {
-                var prop = props[i];
-                CommunicateArrtibute attr = prop.GetCustomAttribute<CommunicateArrtibute>();
-                CommPropIndexDefine commPropIndexDefine = new CommPropIndexDefine();
-                int startIndex = 0;
-                int endIndex = 0;
-                //起始索引获取
-                if (attr.StartIndex != -1)
-                    //自己定义了起始索引就使用定义的
-                    startIndex = attr.StartIndex;
-                else
+                for (int i = 0; i < props.Count; i++)
                 {
-                    if(value.GetBytesIndexDefine.Count == 0)
-                    {
-                        //上一个索引没有值，则使用0作为当前索引的起始索引
-                        startIndex = 0;
-                    }
+                    var prop = props[i];
+                    CommunicateArrtibute attr = prop.GetCustomAttribute<CommunicateArrtibute>();
+                    CommPropIndexDefine commPropIndexDefine = new CommPropIndexDefine();
+                    int startIndex = 0;
+                    int endIndex = 0;
+                    //起始索引获取
+                    if (attr.StartIndex != -1)
+                        //自己定义了起始索引就使用定义的
+                        startIndex = attr.StartIndex;
                     else
                     {
-                        //上一个索引有值，则使用上一个索引的结束索引作为当前索引的起始索引
-                        startIndex = value.GetBytesIndexDefine.Last().Value.EndIndex;
+                        if (value.GetBytesIndexDefine.Count == 0)
+                        {
+                            //上一个索引没有值，则使用0作为当前索引的起始索引
+                            startIndex = 0;
+                        }
+                        else
+                        {
+                            //上一个索引有值，则使用上一个索引的结束索引作为当前索引的起始索引
+                            startIndex = value.GetBytesIndexDefine.Last().Value.EndIndex;
+                        }
                     }
-                }
 
-                //填充中间空白区域
-                if (bytes.Count < startIndex)
-                {
-                    bytes.AddRange(Enumerable.Repeat((byte)0x00, startIndex - bytes.Count));
+                    //填充中间空白区域
+                    if (bytes.Count < startIndex)
+                    {
+                        bytes.AddRange(Enumerable.Repeat((byte)0x00, startIndex - bytes.Count));
+                    }
+                    int propLengh = 0;
+                    //编码获取bytes
+                    bytes.AddRange(PropGetBytesLogic(out propLengh, prop.GetValue(value), attr));
+                    commPropIndexDefine.StartIndex = startIndex;
+                    commPropIndexDefine.EndIndex = startIndex + propLengh;
+                    //添加索引定义
+                    value.GetBytesIndexDefine.Add(attr.OrderIndex, commPropIndexDefine);
                 }
-                int propLengh = 0;
-                //编码获取bytes
-                bytes.AddRange(PropGetBytesLogic(out propLengh, prop.GetValue(value),attr));
-                commPropIndexDefine.StartIndex = startIndex;
-                commPropIndexDefine.EndIndex = startIndex + propLengh;
-                //添加索引定义
-                value.GetBytesIndexDefine.Add(attr.OrderIndex,commPropIndexDefine);
+                lengh = value.GetBytesIndexDefine.Last().Value.EndIndex;
             }
-            lengh = value.GetBytesIndexDefine.Last().Value.EndIndex;
             return bytes.ToArray();
         }
 
@@ -266,6 +270,7 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
         /// <param name="datas"></param>
         public static void ClassGetValueLogic(this BaseCommunicateArrtObject classObj, out int lengh, List<byte> datas)
         {
+            ValiadManager.Instance();
             classObj.GetSelfIndexDefine.Clear();
             var props = classObj.GetType().GetProperties()
                 .Where(a => a.GetCustomAttributes().Count(b => b.GetType() == typeof(CommunicateArrtibute)) > 0).ToList();
@@ -273,53 +278,57 @@ namespace CommunicateUtil.BytesDataAdapters.BaseCommObjAdapters
             props = props.OrderBy(a => a.GetCustomAttribute<CommunicateArrtibute>().OrderIndex).ToList();
 
             lengh = 0;
-            foreach (var prop in props)
+            if(props.Count > 0)
             {
-                var propertyType = prop.PropertyType;
-                if (prop.GetCustomAttributes()
-                    .Count(b => b.GetType() == typeof(ValidCheckArrtibute)) > 0)
+                foreach (var prop in props)
                 {
-                    if (classObj.ValidateProperty(prop.Name) == false)
+                    var propertyType = prop.PropertyType;
+                    if (prop.GetCustomAttributes()
+                        .Count(b => b.GetType() == typeof(ValidCheckArrtibute)) > 0)
                     {
-                        continue;
+                        if (classObj.ValidateProperty(prop.Name) == false)
+                        {
+                            continue;
+                        }
                     }
-                }
-                CommPropIndexDefine indexDefine = new CommPropIndexDefine();
-                CommunicateArrtibute attr = prop.GetCustomAttribute<CommunicateArrtibute>();
-                int startIndex = 0;
-                int endIndex = 0;
-                //起始索引获取
-                if (attr.StartIndex != -1)
-                    //自己定义了起始索引就使用定义的
-                    startIndex = attr.StartIndex;
-                else
-                {
-                    if (classObj.GetSelfIndexDefine.Count == 0)
-                    {
-                        //上一个索引没有值，则使用0作为当前索引的起始索引
-                        startIndex = 0;
-                    }
+                    CommPropIndexDefine indexDefine = new CommPropIndexDefine();
+                    CommunicateArrtibute attr = prop.GetCustomAttribute<CommunicateArrtibute>();
+                    int startIndex = 0;
+                    int endIndex = 0;
+                    //起始索引获取
+                    if (attr.StartIndex != -1)
+                        //自己定义了起始索引就使用定义的
+                        startIndex = attr.StartIndex;
                     else
                     {
-                        //上一个索引有值，则使用上一个索引的结束索引作为当前索引的起始索引
-                        startIndex = classObj.GetSelfIndexDefine.Last().Value.EndIndex;
+                        if (classObj.GetSelfIndexDefine.Count == 0)
+                        {
+                            //上一个索引没有值，则使用0作为当前索引的起始索引
+                            startIndex = 0;
+                        }
+                        else
+                        {
+                            //上一个索引有值，则使用上一个索引的结束索引作为当前索引的起始索引
+                            startIndex = classObj.GetSelfIndexDefine.Last().Value.EndIndex;
+                        }
                     }
+
+                    int propLengh = 0;
+
+                    indexDefine.StartIndex = startIndex;
+                    indexDefine.EndIndex = startIndex + propLengh;
+                    //添加索引定义
+                    classObj.GetSelfIndexDefine.Add(attr.OrderIndex, indexDefine);
+                    prop.SetValue(classObj, prop.PropGetValueLogic(out propLengh, classObj, datas.Skip(startIndex).ToList()));
+
+                    classObj.GetSelfIndexDefine.Remove(attr.OrderIndex);
+                    indexDefine.EndIndex = startIndex + propLengh;
+                    classObj.GetSelfIndexDefine.Add(attr.OrderIndex, indexDefine);
+
                 }
-
-                int propLengh = 0;
-                
-                indexDefine.StartIndex = startIndex;
-                indexDefine.EndIndex = startIndex + propLengh;
-                //添加索引定义
-                classObj.GetSelfIndexDefine.Add(attr.OrderIndex, indexDefine);
-                prop.SetValue(classObj,prop.PropGetValueLogic(out propLengh, classObj, datas.Skip(startIndex).ToList()));
-                
-                classObj.GetSelfIndexDefine.Remove(attr.OrderIndex);
-                indexDefine.EndIndex = startIndex + propLengh;
-                classObj.GetSelfIndexDefine.Add(attr.OrderIndex, indexDefine);
-
+                lengh = classObj.GetSelfIndexDefine.Last().Value.EndIndex;
             }
-            lengh = classObj.GetSelfIndexDefine.Last().Value.EndIndex;
+            
         }
         #endregion
     }

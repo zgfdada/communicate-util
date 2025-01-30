@@ -114,7 +114,7 @@ namespace CommunicateUtil
         [CommunicateArrtibute(OrderIndex = 16,ArrayLength = "11")]
         public string StringValue { get; set; }
     }
-    internal class TestDemo
+    public class TestDemo
     {
         static void Main(string[] args)
         {
@@ -147,7 +147,7 @@ namespace CommunicateUtil
         }
     }
 
-    internal class TestDemo_2
+    public class TestDemo_2
     {
         [ValidationMethod()]
         public static bool ValidateIsTrue(object value)
@@ -160,7 +160,7 @@ namespace CommunicateUtil
         {
             return false;
         }
-        static void Main(string[] args)
+        public static void Main()
         {
             // ************************解释器测试***********************
             //值类型及其相关数组集合的测试
@@ -177,8 +177,8 @@ namespace CommunicateUtil
             object obj_2 = ValueTypeAdapter.GetValue<byte>(out lengh, bytearray, EndianType.Big);
 
             obj = "张图帅" as string;
-            bytearray = StringTypeAdapter.GetBytes(obj.ToString(), 8);
-            obj_2 = StringTypeAdapter.GetString(bytearray, 8);
+            bytearray = StringTypeAdapter.GetBytes(obj.ToString(), 9);
+            obj_2 = StringTypeAdapter.GetString(bytearray, 9);
             obj = (short)55;
             bytearray = ValueTypeAdapter.GetBytes(out lengh, obj, EndianType.Big);
             obj_2 = ValueTypeAdapter.GetValue<short>(out lengh, bytearray, EndianType.Big);
@@ -214,7 +214,6 @@ namespace CommunicateUtil
                 new TestCommArrObj_1() { DoubleLengh = 5, Doubles = EnumType.item5 },
                 new TestCommArrObj_1() { DoubleLengh = 3, Doubles = EnumType.item3 },
             };
-            ValidationUtil.LoadValidationMethods();
             byte[] bytes = commArrObj.ClassGetBytesLogic(out objlengh);
             TestCommArrObj commArrObj_1 = new TestCommArrObj();
             commArrObj_1.ClassGetValueLogic(out objlengh, bytes.ToList());
@@ -241,7 +240,6 @@ namespace CommunicateUtil
 
         [CommunicateArrtibute(OrderIndex = 34)]
         public EnumType EnumType_1 { get; set; }
-        [ValidCheckArrtibute("CommunicateUtil", "ValidateIsFalse")]
         [CommunicateArrtibute(OrderIndex = 35,AutoLengthType = typeof(byte))]
         public TestCommArrObj_1[] arrObj_1 { get; set; }
 

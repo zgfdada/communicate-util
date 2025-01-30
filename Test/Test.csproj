@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5199A1F8-BAE8-4AB9-9626-DB70E42CA30E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>CommunicateUtil</RootNamespace>
-    <AssemblyName>CommunicateUtil</AssemblyName>
+    <ProjectGuid>{CBD5F9B8-E863-4BFE-BE6E-FCC17AA16063}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Test</RootNamespace>
+    <AssemblyName>Test</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -22,7 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\CommunicateUtil.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,8 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
+    <StartupObject>Test.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -44,26 +42,42 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BytesConverter.cs" />
-    <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ArrayAdapter.cs" />
-    <Compile Include="BytesDataAdapters\ArrayValueTypeAdapters\ListAdapter.cs" />
-    <Compile Include="BytesDataAdapters\BaseCommObjAdapters\BaseCommObjAdapter.cs" />
-    <Compile Include="BytesDataAdapters\StringTypeAdapters\StringTypeAdapter.cs" />
-    <Compile Include="BytesDataAdapters\ValueTypeAdapters\EnumAdapter.cs" />
-    <Compile Include="BytesDataAdapters\ValueTypeAdapters\ValueTypeAdapter.cs" />
-    <Compile Include="CommunicateArrtibute.cs" />
-    <Compile Include="TestDemo.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectionEx.cs" />
-    <Compile Include="ValidCheckArrtibute.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\CommunicateUtil\CommunicateUtil.csproj">
+      <Project>{5199a1f8-bae8-4ab9-9626-db70e42ca30e}</Project>
+      <Name>CommunicateUtil</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
