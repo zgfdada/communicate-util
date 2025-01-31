@@ -56,7 +56,6 @@
     <Compile Include="BytesDataAdapters\ValueTypeAdapters\EnumAdapter.cs" />
     <Compile Include="BytesDataAdapters\ValueTypeAdapters\ValueTypeAdapter.cs" />
     <Compile Include="CommunicateArrtibute.cs" />
-    <Compile Include="TestDemo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionEx.cs" />
     <Compile Include="ValidCheckArrtibute.cs" />

@@ -26,6 +26,16 @@ namespace CommunicateUtil
     public class CommunicateArrtibute : Attribute
     {
         /// <summary>
+        /// 描述
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        public string Remarks { get; set; }
+
+        /// <summary>
         /// 通讯字段或属性的排序索引
         /// </summary>
         public float OrderIndex { get; set; } = 0;
