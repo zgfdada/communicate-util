@@ -65,7 +65,7 @@ namespace CommunicateUtil
         /// <summary>
         /// 通讯字段或属性的字节编码类型
         /// </summary>
-        public EndianType EndianType { get; set; } = EndianType.Big;
+        public EndianType EndianType { get; set; } = EndianType.Big_ABCD;
     }
 
     /// <summary>

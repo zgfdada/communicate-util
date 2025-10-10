@@ -22,13 +22,13 @@ namespace TestProject1
             object obj_2;
             byte[] bytearray;
             obj = new List<EnumType>() { EnumType.item5, (EnumType)6 };
-            bytearray = ListAdapter.GetBytes(out lengh, obj, EndianType.Big, typeof(short));
-            obj_2 = ListAdapter.GetListObj(out lengh, bytearray, obj.GetType(), (obj as List<EnumType>).Count, EndianType.Big, typeof(short));
+            bytearray = ListAdapter.GetBytes(out lengh, obj, EndianType.Big_ABCD, typeof(short));
+            obj_2 = ListAdapter.GetListObj(out lengh, bytearray, obj.GetType(), (obj as List<EnumType>).Count, EndianType.Big_ABCD, typeof(short));
             Assert.Equal(obj, obj_2);
 
             obj = new List<float>() { 1.6f, 6f };
-            bytearray = ListAdapter.GetBytes(out lengh, obj, EndianType.Big);
-            obj_2 = ListAdapter.GetListObj(out lengh, bytearray, obj.GetType(), (obj as List<float>).Count, EndianType.Big);
+            bytearray = ListAdapter.GetBytes(out lengh, obj, EndianType.Big_ABCD);
+            obj_2 = ListAdapter.GetListObj(out lengh, bytearray, obj.GetType(), (obj as List<float>).Count, EndianType.Big_ABCD);
             Assert.Equal(obj, obj_2);
 
         }

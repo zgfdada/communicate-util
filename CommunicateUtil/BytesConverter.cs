@@ -21,24 +21,24 @@ namespace CommunicateUtil
     public enum EndianType
     {
         /// <summary>
-        /// 小端模式，即DCBA
+        /// 小端模式
         /// </summary>
-        Little,
+        Little_DCBA,
 
         /// <summary>
-        /// 大端模式。即ABCD
+        /// 大端模式
         /// </summary>
-        Big,
+        Big_ABCD,
 
         /// <summary>
-        /// 以交换小端格式。即CDAB
+        /// 以交换小端格式
         /// </summary>
-        LittleSwap,
+        LittleSwap_CDAB,
 
         /// <summary>
-        /// 以交换大端，即：BADC
+        /// 以交换大端
         /// </summary>
-        BigSwap
+        BigSwap_BADC
     }
     /// <summary>
     /// 字节流转换器(致力于让通讯编码解码更简单)
@@ -57,20 +57,20 @@ namespace CommunicateUtil
             byte[] result = new byte[bytes.Length];
             switch (endianType)
             {
-                case EndianType.Little:
+                case EndianType.Little_DCBA:
                     result = bytes;
                     break;
-                case EndianType.Big:
+                case EndianType.Big_ABCD:
                     result = bytes.Reverse().ToArray();
                     break;
-                case EndianType.LittleSwap:
+                case EndianType.LittleSwap_CDAB:
                     for (int i = 0; i < bytes.Length; i += 2)
                     {
                         result[i] = bytes[i + 1];
                         result[i + 1] = bytes[i];
                     }
                     break;
-                case EndianType.BigSwap:
+                case EndianType.BigSwap_BADC:
                     byte[] bufferbytes = bytes.Reverse().ToArray();
                     for (int i = 0; i < bytes.Length; i += 2)
                     {
