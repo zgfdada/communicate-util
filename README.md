@@ -68,7 +68,7 @@ CommunicateUtil不涉及这些协议层的实现，它只负责数据本身的�
 ## 主要功能
 
 - **数据类型转换**：支持基本值类型、枚举、字符串、数组、集合与字节数组之间的相互转换
-- **字节序控制**：支持小端模式、大端模式等多种字节序格式
+- **字节序控制**：支持四种字节序格式（小端模式Little_DCBA、大端模式Big_ABCD、交换小端LittleSwap_CDAB、交换大端BigSwap_BADC），可灵活配置每个字段的字节序，适应不同通信协议的要求
 - **自定义通信对象**：通过特性标记方式，轻松定义和解析复杂的通信协议结构
 - **灵活的索引配置**：支持自定义字段顺序、起始索引等
 - **嵌套对象支持**：支持通信对象的嵌套定义和解析
@@ -567,18 +567,39 @@ public enum DeviceStatus : byte
 
 #### 6. EndianType
 
-**作用**：指定字节编码类型，控制多字节数据的字节序。
+**作用**：指定字节编码类型，控制多字节数据的字节序（即字节在内存或传输中的排列顺序）。
 **默认值**：EndianType.Big_ABCD
-**使用场景**：根据目标通信协议的要求设置正确的字节序。
+**使用场景**：根据目标通信协议的要求设置正确的字节序，确保跨平台或不同设备间通信数据的一致性。
+
+CommunicateUtil支持四种字节序格式：
+
+1. **Little_DCBA（小端模式）**：低位字节在前，高位字节在后。适用于大多数x86/x64架构的计算机系统。
+2. **Big_ABCD（大端模式）**：高位字节在前，低位字节在后。适用于很多网络协议（如TCP/IP）和嵌入式设备。
+3. **LittleSwap_CDAB（交换小端）**：以2字节为单位进行交换的小端模式。某些特定硬件或协议可能使用此格式。
+4. **BigSwap_BADC（交换大端）**：以2字节为单位进行交换的大端模式。主要用于某些特殊通信协议场景。
+
+**字节序转换原理**：
+- 大端模式(Big_ABCD)：将字节数组反转
+- 小端模式(Little_DCBA)：保持原始字节顺序
+- 交换小端(LittleSwap_CDAB)：每两个字节一组进行交换
+- 交换大端(BigSwap_BADC)：先反转字节数组，再每两个字节一组进行交换
 
 ```csharp
-// 大端字节序
+// 大端字节序 - 适用于大多数网络协议
 [CommunicateArrtibute(OrderIndex = 1, EndianType = EndianType.Big_ABCD)]
 public int BigEndianValue { get; set; }
 
-// 小端字节序
+// 小端字节序 - 适用于大多数计算机内部存储
 [CommunicateArrtibute(OrderIndex = 2, EndianType = EndianType.Little_DCBA)]
 public int LittleEndianValue { get; set; }
+
+// 交换小端字节序 - 适用于特殊硬件协议
+[CommunicateArrtibute(OrderIndex = 3, EndianType = EndianType.LittleSwap_CDAB)]
+public int LittleSwapValue { get; set; }
+
+// 交换大端字节序 - 适用于特定通信场景
+[CommunicateArrtibute(OrderIndex = 4, EndianType = EndianType.BigSwap_BADC)]
+public int BigSwapValue { get; set; }
 ```
 
 #### 7. Desc 和 Remarks
