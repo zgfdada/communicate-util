@@ -3,6 +3,7 @@
 一个致力于让通信协议编码解码变得更简单的C#工具库。
 
 **开源地址：** https://gitee.com/zgf211998110/communicate-util.git
+**AI项目解读：** https://deepwiki.com/zgfdada/communicate-util
 
 ## 项目概述
 
@@ -464,7 +465,8 @@ public class ProtocolExample
             }
         }
     }
-}```
+}
+```
 
 ### 动态数组长度
 
@@ -581,7 +583,7 @@ public int LittleEndianValue { get; set; }
 
 #### 7. Desc 和 Remarks
 
-**作用**：为属性添加描述和备注信息，提高代码可读性。
+**作用**：为属性添加描述和备注信息，提高代码可读性。预留控件内容显示用。
 **默认值**：null
 **使用场景**：为字段添加业务说明或注释。
 
