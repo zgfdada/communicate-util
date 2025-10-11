@@ -2,6 +2,8 @@
 
 一个致力于让通信协议编码解码变得更简单的C#工具库。
 
+**开源地址：** https://gitee.com/zgf211998110/communicate-util.git
+
 ## 项目概述
 
 CommunicateUtil 是一个高效、灵活的C#工具库，专为简化各种通信协议中的数据编码和解码工作而设计。它专注于数据层的编解码处理，不关注协议层的具体实现细节。通过该工具库，能够将C#对象与字节数组进行相互转换，支持多种数据类型和字节序，极大地简化了通信协议的实现过程。
@@ -133,6 +135,13 @@ flowchart TD
 │   │   ├── ArrayValueTypeAdapters\ # 数组类型适配器
 │   │   └── BaseCommObjAdapters\   # 通信对象适配器
 │   └── UiViewAdapter\             # UI视图适配器
+├── TestProject1\                  # 测试项目
+│   ├── _0_ValueTest.cs            # 基本数据类型测试
+│   ├── _1_ValueArrayTest.cs       # 数组类型测试
+│   ├── _2_ValueListTest.cs        # 列表类型测试
+│   ├── _3_CommArrObjTest.cs       # 通信对象测试
+│   ├── _4_CommArrObjTest.cs       # 高级通信对象测试1
+│   └── _5_CommArrObjTest.cs       # 高级通信对象测试2
 ```
 
 ## 核心类介绍
@@ -289,10 +298,13 @@ public int Flag { get; set; }
 
 ### 完整示例：自定义通信协议
 
-下面是一个完整的示例，展示如何使用CommunicateUtil库定义和实现一个自定义的通信协议：
+下面是一个完整的示例，展示如何使用CommunicateUtil库定义和实现一个自定义的通信协议。我们将分几个小部分来介绍这个示例：
+
+#### 3.1 定义协议枚举类型
+
+首先，我们定义协议中使用的枚举类型，用于表示不同的命令类型：
 
 ```csharp
-// 1. 定义协议中的枚举类型
 public enum CommandType : byte
 {
     Read = 0x01,
@@ -300,8 +312,13 @@ public enum CommandType : byte
     Response = 0x03,
     Error = 0x04
 }
+```
 
-// 2. 定义一个嵌套的通信对象
+#### 3.2 定义嵌套通信对象
+
+接下来，定义一个嵌套的通信对象，用于表示协议中的数据点：
+
+```csharp
 public class DataPoint : BaseCommunicateArrtObject
 {
     [CommunicateArrtibute(OrderIndex = 0)]
@@ -313,8 +330,13 @@ public class DataPoint : BaseCommunicateArrtObject
     [CommunicateArrtibute(OrderIndex = 2)]
     public byte Status { get; set; }
 }
+```
 
-// 3. 定义主通信协议对象
+#### 3.3 定义主通信协议对象
+
+然后，定义主通信协议对象，包含完整的协议结构：
+
+```csharp
 public class DeviceProtocol : BaseCommunicateArrtObject
 {
     [CommunicateArrtibute(OrderIndex = 0)]
@@ -337,41 +359,56 @@ public class DeviceProtocol : BaseCommunicateArrtObject
     
     [CommunicateArrtibute(OrderIndex = 6)]
     public byte EndFlag { get; set; } = 0x55;
-    
-    // 4. 重写编码方法，添加自定义逻辑
-    public override byte[] GetBytes()
-    {
-        // 计算数据长度
-        if (DataPoints != null)
-        {
-            DataLength = (ushort)(DataPoints.Length * 7); // 每个DataPoint占7字节
-        }
-        else
-        {
-            DataLength = 0;
-        }
-        
-        // 调用基类方法获取字节数组
-        byte[] baseBytes = base.GetBytes();
-        
-        // 计算校验和
-        byte checksum = 0;
-        for (int i = 1; i < baseBytes.Length - 2; i++) // 跳过起始标志和结束标志
-        {
-            checksum += baseBytes[i];
-        }
-        
-        // 更新校验和
-        Checksum = checksum;
-        
-        // 重新生成字节数组以包含校验和
-        baseBytes = base.GetBytes();
-        
-        return baseBytes;
-    }
 }
+```
 
-// 5. 使用示例
+#### 3.4 重写编码方法（自定义逻辑）
+
+为了实现校验和计算等自定义逻辑，我们可以重写编码方法：
+
+```csharp
+// 在DeviceProtocol类中添加
+public override byte[] GetBytes()
+{
+    // 计算数据长度
+    if (DataPoints != null)
+    {
+        DataLength = (ushort)(DataPoints.Length * 7); // 每个DataPoint占7字节
+    }
+    else
+    {
+        DataLength = 0;
+    }
+    
+    // 调用基类方法获取字节数组
+    byte[] baseBytes = base.GetBytes();
+    
+    // 计算校验和
+    byte checksum = 0;
+    for (int i = 1; i < baseBytes.Length - 2; i++) // 跳过起始标志和结束标志
+    {
+        checksum += baseBytes[i];
+    }
+    
+    // 更新校验和
+    Checksum = checksum;
+    
+    // 重新生成字节数组以包含校验和
+    baseBytes = base.GetBytes();
+    
+    return baseBytes;
+}
+```
+
+#### 3.5 编码解码使用示例
+
+最后，展示如何使用定义的协议对象进行编码和解码。我们将这个示例进一步拆分为几个小部分：
+
+##### 3.5.1 创建协议对象和设置属性
+
+首先，创建协议对象并设置相关属性：
+
+```csharp
 public class ProtocolExample
 {
     public void EncodeDecodeExample()
@@ -387,15 +424,33 @@ public class ProtocolExample
             new DataPoint() { PointId = 1, Value = 23.5f, Status = 0x01 },
             new DataPoint() { PointId = 2, Value = 100.0f, Status = 0x01 }
         };
-        
+```
+
+##### 3.5.2 编码为字节数组
+
+将协议对象编码为字节数组，用于通信传输：
+
+```csharp
         // 编码为字节数组
         byte[] encodedBytes = protocol.GetBytes();
         Console.WriteLine("编码后的字节数组长度: " + encodedBytes.Length);
-        
+```
+
+##### 3.5.3 解码字节数组
+
+从接收到的字节数组中解码出协议对象：
+
+```csharp
         // 解码字节数组
         DeviceProtocol decodedProtocol = new DeviceProtocol();
         decodedProtocol.GetSelf(encodedBytes.ToList());
-        
+```
+
+##### 3.5.4 验证解码结果
+
+验证解码后的对象是否与原始对象一致：
+
+```csharp
         // 验证解码结果
         Console.WriteLine("解码成功: 设备地址={0}, 命令类型={1}", 
             decodedProtocol.DeviceAddress, decodedProtocol.CmdType);
@@ -567,11 +622,48 @@ public class DeviceData : BaseCommunicateArrtObject
 
 ## 示例项目
 
-项目中包含了多个测试用例，展示了不同场景下的使用方法：
+项目中包含了完整的测试项目 `TestProject1`，通过多个测试用例全面展示了库在不同场景下的使用方法和功能验证：
 
-- `_0_ValueTest.cs`：基本值类型的转换测试
-- `_1_ValueArrayTest.cs`：值类型数组的转换测试
-- `_3_CommArrObjTest.cs`：通信对象的编码解码测试
+### TestProject1 测试文件说明
+
+#### _0_ValueTest.cs
+该文件测试基本数据类型的编码和解码功能，包括：
+- 基本值类型（byte、short、int、long、float、double等）的转换测试
+- 字符串类型的编码解码测试
+- 枚举类型的处理测试
+- 不同字节序（大端、小端等）下的数据转换测试
+
+这些测试确保了库能够正确处理各种基础数据类型在不同字节序下的编码解码过程。
+
+#### _1_ValueArrayTest.cs
+该文件测试值类型数组的编码和解码功能，包括：
+- 枚举数组的转换测试
+- 数值类型数组（如float数组）的转换测试
+
+这些测试验证了库能够正确处理数组类型数据的序列化和反序列化过程。
+
+#### _2_ValueListTest.cs
+该文件测试值类型列表（List<T>）的编码和解码功能，包括：
+- 枚举列表的转换测试
+- 数值类型列表（如float列表）的转换测试
+
+这些测试确保了库能够正确处理常用集合类型的数据转换。
+
+#### _3_CommArrObjTest.cs
+该文件测试自定义通信对象的编码和解码功能，包含了一个完整的示例：
+- 创建继承自 `BaseCommunicateArrtObject` 的测试类
+- 使用 `CommunicateArrtibute` 特性配置各属性的编码规则
+- 测试包含多种数据类型（数组、基本类型、字符串、枚举）的复杂对象的编码解码
+- 验证解码后对象与原始对象的一致性
+
+此测试展示了库的核心功能 - 复杂通信协议对象的自动序列化和反序列化。
+
+#### _4_CommArrObjTest.cs 和 _5_CommArrObjTest.cs
+这些文件包含了更多高级场景的测试用例，进一步验证了库在复杂通信协议场景下的稳定性和可靠性。
+
+### 测试项目的使用
+
+测试项目使用 xUnit 测试框架，可以通过 Visual Studio 测试资源管理器或命令行运行测试。测试用例涵盖了库的所有主要功能，为开发者提供了学习和参考的完整示例。
 
 ## 注意事项
 
