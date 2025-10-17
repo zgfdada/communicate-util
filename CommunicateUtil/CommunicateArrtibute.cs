@@ -170,6 +170,13 @@ namespace CommunicateUtil
             int lengh;
             return this.ClassGetBytesLogic(out lengh);
         }
+
+        public static T GetSelf<T>(byte[] bytes) where T : BaseCommunicateArrtObject, new()
+        {
+            var a = new T();
+            a.GetSelf(bytes.ToList());
+            return a;
+        }
     }
 
     /// <summary>
@@ -481,5 +488,8 @@ namespace CommunicateUtil
             return data.ToArray();
         }
         #endregion
+
+
+
     }
 }
