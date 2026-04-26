@@ -9,6 +9,22 @@
 
 CommunicateUtil 是一个基于反射实现的高效、灵活的C#工具库，专为简化各种字节流通信协议中的数据编码和解码工作而设计。它专注于数据层的编解码处理，不关注协议层的具体实现细节。通过该工具库，能够将C#对象与字节数组进行相互转换，支持多种数据类型和字节序，极大地简化了通信协议的实现过程。
 
+### 运行环境
+
+主库 `CommunicateUtil` 使用 SDK-style 项目格式，目标框架为 `netstandard2.0`，可被 .NET Framework 4.6.1+、.NET Core 2.0+、.NET 5+、.NET 8 等项目引用，适合 Windows、Linux、macOS 等跨平台开发场景。
+
+测试项目 `TestProject1` 目标框架为 `net8.0`，使用 xUnit 作为测试框架。
+
+### 构建与测试
+
+```powershell
+dotnet build CommunicateUtil\CommunicateUtil.csproj
+dotnet build CommunicateUtil\CommunicateUtil.sln
+dotnet test TestProject1\TestProject1.csproj
+```
+
+> 注意：`TestProject1` 中的 `ModbusRtuTest` 是真实串口集成测试，依赖本机存在 `COM22` 串口和外部 Modbus RTU 设备。普通开发环境或 CI 环境中，该用例可能因为硬件不可用而失败。
+
 ### 协议层与数据层的区别案例
 
 以Modbus RTU协议的数据帧结构为例，我们可以清晰地看到协议层和数据层的具体划分：
@@ -127,6 +143,7 @@ flowchart TD
 
 ```
 ├── CommunicateUtil\
+│   ├── CommunicateUtil.csproj     # SDK-style netstandard2.0 类库项目
 │   ├── BytesConverter.cs          # 核心字节转换工具类
 │   ├── CommunicateArrtibute.cs    # 通信特性类和相关工具
 │   ├── ReflectionEx.cs            # 反射扩展工具类
@@ -142,7 +159,8 @@ flowchart TD
 │   ├── _2_ValueListTest.cs        # 列表类型测试
 │   ├── _3_CommArrObjTest.cs       # 通信对象测试
 │   ├── _4_CommArrObjTest.cs       # 高级通信对象测试1
-│   └── _5_CommArrObjTest.cs       # 高级通信对象测试2
+│   ├── _5_CommArrObjTest.cs       # 高级通信对象测试2
+│   └── ModbusRtuTest.cs           # 真实串口 Modbus RTU 集成测试
 ```
 
 ## 核心类介绍
@@ -686,7 +704,13 @@ public class DeviceData : BaseCommunicateArrtObject
 
 ### 测试项目的使用
 
-测试项目使用 xUnit 测试框架，可以通过 Visual Studio 测试资源管理器或命令行运行测试。测试用例涵盖了库的所有主要功能，为开发者提供了学习和参考的完整示例。
+测试项目使用 xUnit 测试框架，可以通过 Visual Studio 测试资源管理器或命令行运行测试。测试用例涵盖了库的主要功能，为开发者提供了学习和参考的完整示例。
+
+```powershell
+dotnet test TestProject1\TestProject1.csproj
+```
+
+其中 `ModbusRtuTest` 依赖真实串口设备，默认配置为 `COM22`。如果本机没有对应串口或设备未连接，该测试可能失败；在 CI 或普通开发环境中，建议将该类测试作为集成测试单独启用。
 
 ## 注意事项
 
@@ -694,6 +718,8 @@ public class DeviceData : BaseCommunicateArrtObject
 2. 对于复杂的嵌套对象，需要确保所有子对象都正确继承自`BaseCommunicateArrtObject`
 3. 在处理字符串时，默认使用UTF8编码
 4. 使用`ArrayLength`属性时，可以指定固定长度或其他属性名作为动态长度
+5. 主库目标框架为`netstandard2.0`，新增平台相关能力时应避免直接依赖 Windows-only API
+6. 串口、设备通信等硬件相关逻辑建议放在独立集成测试中，避免影响基础编解码测试的稳定性
 
 ## 许可证
 
