@@ -9,6 +9,39 @@
 
 CommunicateUtil 是一个基于反射实现的高效、灵活的C#工具库，专为简化各种字节流通信协议中的数据编码和解码工作而设计。它专注于数据层的编解码处理，不关注协议层的具体实现细节。通过该工具库，能够将C#对象与字节数组进行相互转换，支持多种数据类型和字节序，极大地简化了通信协议的实现过程。
 
+### Web 可视化通讯类库生成器
+
+仓库新增 `CommunicateUtilDesigner`，这是基于 `CommunicateUtil` 基库封装的一层 Web 可视化配置与源码生成工具。它适合在通讯协议字段较多、枚举较多、需要反复调整字段顺序和长度配置时使用。
+
+`CommunicateUtilDesigner` 提供浏览器表格式配置界面，可以配置命名空间、通讯类、枚举、枚举值和字段，并生成目标框架固定为 `netstandard2.0` 的 C# 通讯数据层类库源码。生成结果仍然基于 `CommunicateUtil`，通讯类继承 `BaseCommunicateArrtObject`，字段生成 `[CommunicateArrtibute]`，可继续使用 `GetBytes()` 和 `GetSelf<T>()` 完成对象与字节数组之间的转换。
+
+主要能力：
+
+- 通过 Web 页面维护命名空间、通讯类、字段、枚举和枚举值。
+- 字段配置支持基础类型、`string`、枚举、数组、`List<T>` 和嵌套通讯类。
+- 字段 `Order` 支持手动插入，冲突时后续字段自动后移。
+- 枚举值支持手动输入，冲突时同枚举内后续枚举值自动后移。
+- 支持完整项目源码预览、下载 ZIP、写入本地目录。
+- 支持只生成当前类源码或当前枚举源码，方便小范围调整后快速查看。
+- 配置数据使用 `SqlSugarCore + SQLite` 持久化。
+
+启动方式：
+
+```powershell
+dotnet run --project CommunicateUtilDesigner\src\CommunicateUtil.Web\CommunicateUtil.Web.csproj --urls http://127.0.0.1:18057
+```
+
+打开浏览器访问：
+
+```text
+http://127.0.0.1:18057/
+```
+
+更多说明：
+
+- 代码工程师文档：[CommunicateUtilDesigner/README_CODE.md](CommunicateUtilDesigner/README_CODE.md)
+- 使用者文档：[CommunicateUtilDesigner/README_USER.md](CommunicateUtilDesigner/README_USER.md)
+
 ### 运行环境
 
 主库 `CommunicateUtil` 使用 SDK-style 项目格式，目标框架为 `netstandard2.0`，可被 .NET Framework 4.6.1+、.NET Core 2.0+、.NET 5+、.NET 8 等项目引用，适合 Windows、Linux、macOS 等跨平台开发场景。
