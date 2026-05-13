@@ -1,0 +1,70 @@
+@model List<CommunicateUtil.Web.Data.ProtocolProjectEntity>
+
+@{
+    ViewData["Title"] = "通讯类库配置";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h3 mb-1">通讯类库配置</h1>
+        <div class="text-muted">使用表格配置生成 CommunicateUtil 数据层类库。</div>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">新建命名空间</a>
+</div>
+
+<table class="table table-sm align-middle project-table">
+    <thead>
+        <tr>
+            <th>命名空间名称</th>
+            <th>命名空间</th>
+            <th>程序集</th>
+            <th>目标框架</th>
+            <th>更新时间</th>
+            <th class="text-end">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.ProjectName</td>
+            <td><code>@item.Namespace</code></td>
+            <td><code>@item.AssemblyName</code></td>
+            <td><code>@item.TargetFramework</code></td>
+            <td>@item.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@item.Id">配置</a>
+                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<div class="project-card-list">
+@foreach (var item in Model)
+{
+    <div class="project-card">
+        <div>
+            <a class="project-card-title" asp-action="Details" asp-route-id="@item.Id">@item.ProjectName</a>
+            <div class="project-card-meta"><code>@item.Namespace</code> · <code>@item.TargetFramework</code></div>
+            <div class="project-card-meta">程序集：<code>@item.AssemblyName</code></div>
+        </div>
+        <div class="project-card-actions">
+            <a class="btn btn-primary btn-sm" asp-action="Details" asp-route-id="@item.Id">进入配置</a>
+            <form asp-action="Delete" asp-route-id="@item.Id" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger btn-sm">删除</button>
+            </form>
+        </div>
+    </div>
+}
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="border rounded p-4 text-muted">暂无命名空间配置。先新建一个命名空间，然后添加通讯类、字段和枚举。</div>
+}

@@ -1,0 +1,31 @@
+@model CommunicateUtil.Web.Data.ProtocolProjectEntity
+
+@{
+    ViewData["Title"] = "新建命名空间";
+}
+
+<h1 class="h3 mb-3">新建命名空间</h1>
+
+<form asp-action="Create" method="post" class="row g-3" style="max-width: 760px;">
+    @Html.AntiForgeryToken()
+    <div class="col-md-6">
+        <label class="form-label" asp-for="ProjectName">命名空间名称</label>
+        <input class="form-control" asp-for="ProjectName" placeholder="DeviceProtocolModels" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" asp-for="AssemblyName">程序集名称</label>
+        <input class="form-control" asp-for="AssemblyName" placeholder="DeviceProtocolModels" />
+    </div>
+    <div class="col-12">
+        <label class="form-label" asp-for="Namespace">命名空间</label>
+        <input class="form-control" asp-for="Namespace" placeholder="Device.Protocol.Models" />
+    </div>
+    <div class="col-md-6">
+        <label class="form-label" asp-for="TargetFramework">目标框架</label>
+        <input class="form-control" asp-for="TargetFramework" value="netstandard2.0" readonly />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">创建</button>
+        <a class="btn btn-link" asp-action="Index">返回</a>
+    </div>
+</form>

@@ -1,0 +1,54 @@
+@model CommunicateUtil.Generator.Models.GenerationResult
+
+@{
+    var title = ViewData["Title"]?.ToString();
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        title = "源码预览";
+        ViewData["Title"] = title;
+    }
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">@title</h1>
+    <a class="btn btn-outline-secondary" href="javascript:history.back()">返回</a>
+</div>
+
+@if (TempData["Diagnostics"] != null)
+{
+    <div class="alert alert-info"><pre class="mb-0">@TempData["Diagnostics"]</pre></div>
+}
+
+@if (!Model.Success)
+{
+    <div class="alert alert-danger">
+        <strong>生成失败</strong>
+        <ul class="mb-0">
+        @foreach (var diagnostic in Model.Diagnostics)
+        {
+            <li>@diagnostic</li>
+        }
+        </ul>
+    </div>
+}
+else
+{
+    <div class="accordion" id="sourceAccordion">
+    @for (var i = 0; i < Model.Files.Count; i++)
+    {
+        var file = Model.Files[i];
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#file_@i">
+                    @file.Path
+                </button>
+            </h2>
+            <div id="file_@i" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#sourceAccordion">
+                <div class="accordion-body">
+                    <pre class="source-preview"><code>@file.Content</code></pre>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}

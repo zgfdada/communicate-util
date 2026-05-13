@@ -61,6 +61,8 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+CommunicateUtilDesigner/artifacts/
+CommunicateUtilDesigner/src/CommunicateUtil.Web/App_Data/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

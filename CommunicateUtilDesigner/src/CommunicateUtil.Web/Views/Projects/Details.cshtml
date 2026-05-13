@@ -1,0 +1,615 @@
+@model CommunicateUtil.Web.Services.ProjectWorkspaceViewModel
+
+@{
+    ViewData["Title"] = Model.Project.ProjectName;
+    var selectedClass = Model.SelectedClass;
+    var selectedEnum = Model.SelectedEnum;
+    var selectedClassFields = selectedClass == null
+        ? new List<CommunicateUtil.Web.Data.CommFieldEntity>()
+        : Model.Fields.Where(f => f.ClassId == selectedClass.Id)
+            .OrderBy(f => float.TryParse(f.OrderIndex, out var parsed) ? parsed : 0)
+            .ThenBy(f => f.Id)
+            .ToList();
+    var selectedEnumMembers = selectedEnum == null
+        ? new List<CommunicateUtil.Web.Data.EnumMemberEntity>()
+        : Model.EnumMembers.Where(m => m.EnumId == selectedEnum.Id)
+            .OrderBy(m => m.Value)
+            .ThenBy(m => m.Id)
+            .ToList();
+    var nextEnumMemberValue = selectedEnumMembers.Count == 0
+        ? 0
+        : selectedEnumMembers.Max(m => m.Value) + 1;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h3 mb-1">@Model.Project.ProjectName</h1>
+        <div class="text-muted"><code>@Model.Project.Namespace</code> · <code>@Model.Project.TargetFramework</code></div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-action="Index">返回</a>
+        <a class="btn btn-outline-primary" asp-action="Preview" asp-route-id="@Model.Project.Id">预览源码</a>
+        <a class="btn btn-primary" asp-action="Download" asp-route-id="@Model.Project.Id">下载 ZIP</a>
+        <form asp-action="WriteLocal" asp-route-id="@Model.Project.Id" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-success">写入本地</button>
+        </form>
+    </div>
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#solution" type="button">命名空间配置</button></li>
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#classes" type="button">类配置</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#enums" type="button">枚举配置</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fields" type="button">字段配置</button></li>
+</ul>
+
+@if (TempData["Diagnostics"] != null)
+{
+    <div class="alert alert-warning mt-3 mb-0">@TempData["Diagnostics"]</div>
+}
+
+<div class="tab-content pt-3">
+    <div class="tab-pane fade" id="solution">
+        <div class="config-select-shell mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="section-kicker">命名空间选择</div>
+                <a class="btn btn-sm btn-primary" asp-action="Create">新增命名空间</a>
+            </div>
+            <div class="config-option-row">
+                @foreach (var project in Model.Projects)
+                {
+                    <div class="config-option config-option-card @(project.Id == Model.Project.Id ? "active" : "")">
+                        <a class="config-option-main" asp-action="Details" asp-route-id="@project.Id" asp-fragment="solution">
+                            <span>@project.ProjectName</span>
+                            <small>@project.TargetFramework · @project.Namespace</small>
+                        </a>
+                        <form asp-action="DeleteFromDetails" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@project.Id" />
+                            <input type="hidden" name="currentProjectId" value="@Model.Project.Id" />
+                            <input type="hidden" name="tab" value="solution" />
+                            <button class="icon-btn danger" title="删除命名空间">-</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade show active" id="classes">
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">命名空间选择</div>
+            <div class="config-option-row">
+                @foreach (var project in Model.Projects)
+                {
+                    <a class="config-option @(project.Id == Model.Project.Id ? "active" : "")" asp-action="Details" asp-route-id="@project.Id" asp-fragment="classes">
+                        <span>@project.ProjectName</span>
+                        <small>@project.TargetFramework · @project.Namespace</small>
+                    </a>
+                }
+            </div>
+        </div>
+        <form asp-action="AddClass" method="post" class="row g-2 align-items-end mb-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+            <div class="col-md-3"><label class="form-label">类名</label><input class="form-control" name="Name" placeholder="DeviceData" /></div>
+            <div class="col-md-6"><label class="form-label">描述</label><input class="form-control" name="Desc" placeholder="设备数据体" /></div>
+            <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">添加类</button></div>
+        </form>
+        <table class="table table-sm align-middle">
+            <thead><tr><th>类名</th><th>描述</th><th>字段数</th><th class="text-end">操作</th></tr></thead>
+            <tbody>
+            @foreach (var cls in Model.Classes)
+            {
+                <tr>
+                    <td><code>@cls.Name</code></td>
+                    <td>@cls.Desc</td>
+                    <td>@Model.Fields.Count(f => f.ClassId == cls.Id)</td>
+                    <td class="text-end">
+                        <form asp-action="DeleteClass" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                            <input type="hidden" name="classId" value="@cls.Id" />
+                            <button class="btn btn-sm btn-outline-danger">删除</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="fields">
+        <form id="add-field-form" asp-action="AddField" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+            <input type="hidden" id="fieldClassId" name="ClassId" value="@Model.SelectedClassId" />
+        </form>
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">命名空间选择</div>
+            <div class="config-option-row">
+                @foreach (var project in Model.Projects)
+                {
+                    <a class="config-option @(project.Id == Model.Project.Id ? "active" : "")" asp-action="Details" asp-route-id="@project.Id" asp-fragment="fields">
+                        <span>@project.ProjectName</span>
+                        <small>@project.TargetFramework · @project.Namespace</small>
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">类库选择</div>
+            <div class="config-option-row">
+                @foreach (var cls in Model.Classes)
+                {
+                    <a class="config-option @(cls.Id == Model.SelectedClassId ? "active" : "")" asp-action="Details" asp-route-id="@Model.Project.Id" asp-route-classId="@cls.Id" asp-fragment="fields">
+                        <span>@cls.Name</span>
+                        <small>@Model.Fields.Count(f => f.ClassId == cls.Id) 个字段</small>
+                    </a>
+                }
+                @if (Model.Classes.Count == 0)
+                {
+                    <span class="text-muted small">请先在“类配置”中添加通讯类。</span>
+                }
+            </div>
+        </div>
+        <div class="local-generate-bar mb-3">
+            <div>
+                <div class="section-kicker">当前字段配置生成</div>
+                <div class="text-muted small">只预览当前类库 <code>@(selectedClass?.Name ?? "未选择")</code> 的 C# 源码。</div>
+            </div>
+            <a class="btn btn-sm btn-outline-primary @(selectedClass == null ? "disabled" : "")"
+               asp-action="PreviewClass"
+               asp-route-id="@Model.Project.Id"
+               asp-route-classId="@Model.SelectedClassId">生成当前类源码</a>
+        </div>
+        <div class="field-guide mb-2">
+            <div class="field-guide-item">
+                <strong>配置顺序</strong>
+                先选命名空间和类库，再填写实体属性、字段类型和具体类型；String 类型会自动固定为 string。
+            </div>
+            <div class="field-guide-item">
+                <strong>集合与长度</strong>
+                集合选 Array/List 会生成自动长度特征 <code>AutoLengthType = typeof(byte)</code>；长度填写固定数量或长度字段名。
+            </div>
+            <div class="field-guide-item">
+                <strong>Order</strong>
+                Order 决定通讯字段顺序；手动插入已有序号时，后续字段会自动后移。
+            </div>
+            <div class="field-guide-item">
+                <strong>保存与生成</strong>
+                每行点 ✓ 保存；完成后可生成当前类源码，也可用顶部“预览源码”生成整个项目。
+            </div>
+        </div>
+        <div class="field-grid-shell">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div>
+                    <div class="section-kicker">属性/字段</div>
+                    <div class="text-muted small">当前类库：@(selectedClass?.Name ?? "未选择")；上移/下移会重排当前类库内的 OrderIndex。</div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle field-grid">
+                    <thead>
+                        <tr>
+                            <th style="width:72px;">编号</th>
+                            <th style="width:160px;">实体属性</th>
+                            <th style="width:120px;">字段类型</th>
+                            <th style="width:140px;">类型</th>
+                            <th style="width:110px;">集合</th>
+                            <th style="width:90px;">Order</th>
+                            <th style="width:90px;">长度</th>
+                            <th style="width:120px;">字节序</th>
+                            <th>备注</th>
+                            <th style="width:112px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for (var i = 0; i < selectedClassFields.Count; i++)
+                    {
+                        var field = selectedClassFields[i];
+                        <tr>
+                            <td class="text-muted">@(i + 1)</td>
+                            <td><input form="field-edit-@field.Id" class="form-control form-control-sm" name="Name" value="@field.Name" /></td>
+                            <td>
+                                <select form="field-edit-@field.Id" class="form-select form-select-sm field-kind-select" name="TypeKind" data-target="field-type-@field.Id">
+                                    <option selected="@(field.TypeKind == "Basic")">Basic</option>
+                                    <option selected="@(field.TypeKind == "String")">String</option>
+                                    <option selected="@(field.TypeKind == "Enum")">Enum</option>
+                                    <option selected="@(field.TypeKind == "CommClass")">CommClass</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select form="field-edit-@field.Id" class="form-select form-select-sm field-type-select" id="field-type-@field.Id" name="TypeName">
+                                    @foreach (var basicType in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.BasicTypes)
+                                    {
+                                        <option value="@basicType" data-kind="Basic" selected="@(field.TypeName == basicType)">@basicType</option>
+                                    }
+                                    @foreach (var enumDef in Model.Enums)
+                                    {
+                                        <option value="@enumDef.Name" data-kind="Enum" selected="@(field.TypeName == enumDef.Name)">@enumDef.Name</option>
+                                    }
+                                    @foreach (var classOption in Model.Classes)
+                                    {
+                                        <option value="@classOption.Name" data-kind="CommClass" selected="@(field.TypeName == classOption.Name)">@classOption.Name</option>
+                                    }
+                                    <option value="string" data-kind="String" selected="@(field.TypeKind == "String")">string</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select form="field-edit-@field.Id" class="form-select form-select-sm" name="CollectionKind">
+                                    <option selected="@(field.CollectionKind == "None")">None</option>
+                                    <option selected="@(field.CollectionKind == "Array")">Array</option>
+                                    <option selected="@(field.CollectionKind == "List")">List</option>
+                                </select>
+                            </td>
+                            <td><input form="field-edit-@field.Id" class="form-control form-control-sm" name="OrderIndex" value="@field.OrderIndex" /></td>
+                            <td><input form="field-edit-@field.Id" class="form-control form-control-sm" name="ArrayLength" value="@field.ArrayLength" title="固定长度填写数字，动态长度填写属性名；数组/List 为 -1 时自动生成长度前缀" /></td>
+                            <td>
+                                <select form="field-edit-@field.Id" class="form-select form-select-sm" name="EndianType">
+                                    @foreach (var endian in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.EndianTypes)
+                                    {
+                                        <option selected="@(field.EndianType == endian)">@endian</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input form="field-edit-@field.Id" class="form-control form-control-sm" name="Remarks" value="@field.Remarks" /></td>
+                            <td>
+                                <div class="field-actions">
+                                    <form id="field-edit-@field.Id" asp-action="UpdateField" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="Id" value="@field.Id" />
+                                        <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="ClassId" value="@field.ClassId" />
+                                        <input type="hidden" name="StartIndex" value="@field.StartIndex" />
+                                        <input type="hidden" name="EnumEndType" value="@field.EnumEndType" />
+                                        <input type="hidden" name="ValidationMethodName" value="@field.ValidationMethodName" />
+                                        <input type="hidden" name="Desc" value="@field.Desc" />
+                                        <button class="icon-btn save" title="保存">✓</button>
+                                    </form>
+                                    <form asp-action="MoveField" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="classId" value="@field.ClassId" />
+                                        <input type="hidden" name="fieldId" value="@field.Id" />
+                                        <input type="hidden" name="direction" value="-1" />
+                                        <button class="icon-btn" title="上移" @(i == 0 ? "disabled" : "")>↑</button>
+                                    </form>
+                                    <form asp-action="MoveField" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="classId" value="@field.ClassId" />
+                                        <input type="hidden" name="fieldId" value="@field.Id" />
+                                        <input type="hidden" name="direction" value="1" />
+                                        <button class="icon-btn" title="下移" @(i == selectedClassFields.Count - 1 ? "disabled" : "")>↓</button>
+                                    </form>
+                                    <form asp-action="DeleteField" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="classId" value="@field.ClassId" />
+                                        <input type="hidden" name="fieldId" value="@field.Id" />
+                                        <button class="icon-btn danger" title="删除">-</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                        <tr class="field-add-row">
+                            <td>新增</td>
+                            <td><input class="form-control form-control-sm" name="Name" form="add-field-form" placeholder="Data1" /></td>
+                            <td>
+                                <select class="form-select form-select-sm" id="fieldTypeKind" name="TypeKind" form="add-field-form">
+                                    <option>Basic</option><option>String</option><option>Enum</option><option>CommClass</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm" id="fieldTypeName" name="TypeName" form="add-field-form">
+                                    @foreach (var basicType in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.BasicTypes)
+                                    {
+                                        <option value="@basicType" data-kind="Basic">@basicType</option>
+                                    }
+                                    @foreach (var enumDef in Model.Enums)
+                                    {
+                                        <option value="@enumDef.Name" data-kind="Enum">@enumDef.Name</option>
+                                    }
+                                    @foreach (var cls in Model.Classes)
+                                    {
+                                        <option value="@cls.Name" data-kind="CommClass">@cls.Name</option>
+                                    }
+                                    <option value="string" data-kind="String">string</option>
+                                </select>
+                            </td>
+                            <td><select class="form-select form-select-sm" id="fieldCollectionKind" name="CollectionKind" form="add-field-form"><option>None</option><option>Array</option><option>List</option></select></td>
+                            <td><input class="form-control form-control-sm" id="fieldOrderIndex" name="OrderIndex" form="add-field-form" value="0" /></td>
+                            <td><input class="form-control form-control-sm" id="fieldArrayLength" name="ArrayLength" form="add-field-form" value="-1" title="固定长度填写数字，动态长度填写属性名；数组/List 为 -1 时自动生成长度前缀" /></td>
+                            <td>
+                                <select class="form-select form-select-sm" name="EndianType" form="add-field-form">
+                                    @foreach (var endian in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.EndianTypes)
+                                    {
+                                        <option>@endian</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <input type="hidden" name="StartIndex" value="-1" form="add-field-form" />
+                                <input type="hidden" name="EnumEndType" value="" form="add-field-form" />
+                                <input type="hidden" name="ValidationMethodName" value="" form="add-field-form" />
+                                <input type="hidden" name="Desc" value="" form="add-field-form" />
+                                <input class="form-control form-control-sm" name="Remarks" form="add-field-form" placeholder="备注" />
+                            </td>
+                            <td><button class="icon-btn add" type="submit" form="add-field-form" title="添加字段" @(selectedClass == null ? "disabled" : "")>+</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="enums">
+        <form id="add-enum-form" asp-action="AddEnum" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+            <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+        </form>
+        <form id="add-enum-member-form" asp-action="AddEnumMember" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+            <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+            <input type="hidden" name="EnumId" value="@Model.SelectedEnumId" />
+        </form>
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">命名空间选择</div>
+            <div class="config-option-row">
+                @foreach (var project in Model.Projects)
+                {
+                    <a class="config-option @(project.Id == Model.Project.Id ? "active" : "")" asp-action="Details" asp-route-id="@project.Id" asp-fragment="enums">
+                        <span>@project.ProjectName</span>
+                        <small>@project.TargetFramework · @project.Namespace</small>
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">类库选择</div>
+            <div class="config-option-row">
+                @foreach (var cls in Model.Classes)
+                {
+                    <a class="config-option @(cls.Id == Model.SelectedClassId ? "active" : "")" asp-action="Details" asp-route-id="@Model.Project.Id" asp-route-classId="@cls.Id" asp-route-enumId="@Model.SelectedEnumId" asp-fragment="enums">
+                        <span>@cls.Name</span>
+                        <small>@Model.Fields.Count(f => f.ClassId == cls.Id) 个字段</small>
+                    </a>
+                }
+                @if (Model.Classes.Count == 0)
+                {
+                    <span class="text-muted small">请先在“类配置”中添加通讯类。</span>
+                }
+            </div>
+        </div>
+        <div class="field-guide mb-2">
+            <div class="field-guide-item">
+                <strong>枚举定义</strong>
+                先选择一个枚举定义；新增和选择方式与命名空间配置保持一致。
+            </div>
+            <div class="field-guide-item">
+                <strong>枚举值</strong>
+                枚举值只编辑当前选中的枚举，不需要再单独选择枚举类型。
+            </div>
+            <div class="field-guide-item">
+                <strong>字段引用</strong>
+                枚举名会出现在字段类型为 Enum 时的类型下拉框。
+            </div>
+            <div class="field-guide-item">
+                <strong>生成结果</strong>
+                每个枚举会生成一个 <code>Enums/{EnumName}.cs</code> 文件，成员按值排序输出。
+            </div>
+        </div>
+        <div class="config-select-shell mb-3">
+            <div class="section-kicker mb-3">枚举定义选择</div>
+            <div class="config-option-row mb-3">
+                @foreach (var enumDef in Model.Enums)
+                {
+                    <div class="config-option config-option-card @(enumDef.Id == Model.SelectedEnumId ? "active" : "")">
+                        <a class="config-option-main" asp-action="Details" asp-route-id="@Model.Project.Id" asp-route-classId="@Model.SelectedClassId" asp-route-enumId="@enumDef.Id" asp-fragment="enums">
+                            <span>@enumDef.Name</span>
+                            <small>@enumDef.UnderlyingType · @Model.EnumMembers.Count(m => m.EnumId == enumDef.Id) 个枚举值</small>
+                        </a>
+                        <form asp-action="DeleteEnum" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                            <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+                            <input type="hidden" name="enumId" value="@enumDef.Id" />
+                            <button class="icon-btn danger" title="删除枚举">-</button>
+                        </form>
+                    </div>
+                }
+                @if (Model.Enums.Count == 0)
+                {
+                    <span class="text-muted small">暂无枚举定义，请先新增一个枚举。</span>
+                }
+            </div>
+            <div class="border-top pt-3">
+                <div class="section-kicker mb-2">新增枚举</div>
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">枚举名</label>
+                        <input class="form-control form-control-sm" name="Name" form="add-enum-form" placeholder="CommandType" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">底层类型</label>
+                        <select class="form-select form-select-sm" name="UnderlyingType" form="add-enum-form">
+                            @foreach (var enumType in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.EnumUnderlyingTypes)
+                            {
+                                <option selected="@(enumType == "byte")">@enumType</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">注释</label>
+                        <input class="form-control form-control-sm" name="Desc" form="add-enum-form" placeholder="生成到 enum XML 注释" />
+                    </div>
+                    <div class="col-md-1">
+                        <button class="icon-btn add" type="submit" form="add-enum-form" title="新增枚举">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (selectedEnum != null)
+        {
+            <div class="config-select-shell mb-3">
+                <div class="section-kicker mb-2">当前枚举定义</div>
+                <form asp-action="UpdateEnum" method="post" class="row g-2 align-items-end">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+                    <input type="hidden" name="Id" value="@selectedEnum.Id" />
+                    <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+                    <div class="col-md-4">
+                        <label class="form-label">枚举名</label>
+                        <input class="form-control form-control-sm" name="Name" value="@selectedEnum.Name" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">底层类型</label>
+                        <select class="form-select form-select-sm" name="UnderlyingType">
+                            @foreach (var enumType in CommunicateUtil.Web.Services.ProjectWorkspaceViewModel.EnumUnderlyingTypes)
+                            {
+                                <option selected="@(selectedEnum.UnderlyingType == enumType)">@enumType</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">注释</label>
+                        <input class="form-control form-control-sm" name="Desc" value="@selectedEnum.Desc" placeholder="生成到 enum XML 注释" />
+                    </div>
+                    <div class="col-md-1">
+                        <button class="icon-btn save" title="保存">✓</button>
+                    </div>
+                </form>
+                <div class="local-generate-bar mt-3 mb-0">
+                    <div>
+                        <div class="section-kicker">当前枚举配置代码生成</div>
+                        <div class="text-muted small">只预览当前枚举 <code>@selectedEnum.Name</code> 的 C# 源码。</div>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary"
+                       asp-action="PreviewEnum"
+                       asp-route-id="@Model.Project.Id"
+                       asp-route-enumId="@selectedEnum.Id">生成当前枚举源码</a>
+                </div>
+            </div>
+        }
+        <div class="field-grid-shell">
+            <div class="section-kicker mb-2">枚举值 @(selectedEnum == null ? string.Empty : "- " + selectedEnum.Name)</div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle field-grid">
+                    <thead>
+                        <tr>
+                            <th style="width:72px;">编号</th>
+                            <th>成员名</th>
+                            <th style="width:140px;">值</th>
+                            <th style="width:96px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for (var i = 0; i < selectedEnumMembers.Count; i++)
+                    {
+                        var member = selectedEnumMembers[i];
+                        <tr>
+                            <td class="text-muted">@(i + 1)</td>
+                            <td><input form="enum-member-edit-@member.Id" class="form-control form-control-sm" name="Name" value="@member.Name" /></td>
+                            <td><input form="enum-member-edit-@member.Id" class="form-control form-control-sm" type="number" name="Value" value="@member.Value" /></td>
+                            <td>
+                                <div class="field-actions">
+                                    <form id="enum-member-edit-@member.Id" asp-action="UpdateEnumMember" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="ProjectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="Id" value="@member.Id" />
+                                        <input type="hidden" name="EnumId" value="@member.EnumId" />
+                                        <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+                                        <input type="hidden" name="enumId" value="@member.EnumId" />
+                                        <button class="icon-btn save" title="保存">✓</button>
+                                    </form>
+                                    <form asp-action="DeleteEnumMember" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="projectId" value="@Model.Project.Id" />
+                                        <input type="hidden" name="classId" value="@Model.SelectedClassId" />
+                                        <input type="hidden" name="enumId" value="@member.EnumId" />
+                                        <input type="hidden" name="memberId" value="@member.Id" />
+                                        <button class="icon-btn danger" title="删除枚举值">-</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                        <tr class="field-add-row">
+                            <td>新增</td>
+                            <td><input class="form-control form-control-sm" name="Name" form="add-enum-member-form" placeholder="Read" /></td>
+                            <td><input class="form-control form-control-sm" type="number" name="Value" form="add-enum-member-form" value="@nextEnumMemberValue" /></td>
+                            <td><button class="icon-btn add" type="submit" form="add-enum-member-form" title="添加枚举值" @(selectedEnum == null ? "disabled" : "")>+</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            function activateTabFromHash() {
+                const hash = window.location.hash;
+                if (!hash) return;
+                const trigger = document.querySelector(`[data-bs-target="${hash}"]`);
+                if (trigger && window.bootstrap) {
+                    window.bootstrap.Tab.getOrCreateInstance(trigger).show();
+                }
+            }
+
+            const fieldCounts = {
+                @foreach (var cls in Model.Classes)
+                {
+                    <text>"@cls.Id": @Model.Fields.Count(f => f.ClassId == cls.Id),</text>
+                }
+            };
+            const classInput = document.getElementById("fieldClassId");
+            const kindSelect = document.getElementById("fieldTypeKind");
+            const typeSelect = document.getElementById("fieldTypeName");
+            const orderInput = document.getElementById("fieldOrderIndex");
+
+            function applyTypeFilter(kindSelect, typeSelect) {
+                if (!kindSelect || !typeSelect) return;
+                const kind = kindSelect.value;
+                for (const option of typeSelect.options) {
+                    const optionKind = option.dataset.kind || "Basic";
+                    option.hidden = kind !== optionKind;
+                }
+                const firstVisible = Array.from(typeSelect.options).find(option => !option.hidden);
+                if (firstVisible && typeSelect.selectedOptions[0]?.hidden) {
+                    typeSelect.value = firstVisible.value;
+                }
+                if (kind === "String") {
+                    typeSelect.value = "string";
+                    typeSelect.classList.add("readonly-select");
+                } else {
+                    typeSelect.classList.remove("readonly-select");
+                }
+            }
+
+            function syncOrder() {
+                if (!classInput || !orderInput) return;
+                const count = fieldCounts[classInput.value] || 0;
+                orderInput.value = count + 1;
+            }
+
+            kindSelect?.addEventListener("change", () => applyTypeFilter(kindSelect, typeSelect));
+            for (const editKind of document.querySelectorAll(".field-kind-select")) {
+                const target = document.getElementById(editKind.dataset.target);
+                editKind.addEventListener("change", () => applyTypeFilter(editKind, target));
+                applyTypeFilter(editKind, target);
+            }
+            syncOrder();
+            applyTypeFilter(kindSelect, typeSelect);
+            activateTabFromHash();
+            window.addEventListener("hashchange", activateTabFromHash);
+        })();
+    </script>
+}
