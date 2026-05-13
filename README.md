@@ -1,9 +1,16 @@
 # CommunicateUtil - 字节流通信编码解码工具库
 
-一个致力于让字节流通信协议数据层编码解码变得更简单的C#工具库。
+一个用于简化字节流通信协议数据层编码、解码的 C# 工具库。
 
 **开源地址：** https://gitee.com/zgf211998110/communicate-util.git
 **AI项目解读：** https://deepwiki.com/zgfdada/communicate-util
+
+## 文档导航
+
+- **想快速使用核心库**：先看本文的「使用方法」「CommunicateArrtibute属性详解」和 [CommunicateUtil食用指南.md](CommunicateUtil食用指南.md)。
+- **想用浏览器生成通讯类库**：看 [CommunicateUtilDesigner/README_USER.md](CommunicateUtilDesigner/README_USER.md)。
+- **想维护或二次开发 Web 生成器**：看 [CommunicateUtilDesigner/README_CODE.md](CommunicateUtilDesigner/README_CODE.md)。
+- **想了解测试覆盖**：看本文的「示例项目」和 `TestProject1`、`CommunicateUtilDesigner/tests`。
 
 ## 项目概述
 
@@ -163,37 +170,44 @@ flowchart TD
     F <-->|通信传输| G
 ```
 
-- **数据类型转换**：支持基本值类型、枚举、字符串、数组、集合与字节数组之间的相互转换
-- **字节序控制**：支持小端模式、大端模式等多种字节序格式
-- **自定义通信对象**：通过特性标记方式，轻松定义和解析复杂的通信协议结构
-- **灵活的索引配置**：支持自定义字段顺序、起始索引等
-- **嵌套对象支持**：支持通信对象的嵌套定义和解析
-- **数据验证**：提供属性级别的数据验证功能
+上图中的核心路径可以理解为：业务对象通过 `CommunicateArrtibute` 描述字段规则，`BaseCommObjAdapter` 根据字段类型分发到不同适配器，最终由 `BytesConverter` 完成值与字节序列的转换。
 
 ## 项目结构
 
-项目采用了模块化的设计，将不同类型的数据处理逻辑分离到不同的适配器中，同时提供了统一的接口和基础功能。
+项目采用模块化结构：根目录保留核心库、设计器、测试和示例项目；核心库把不同类型的数据处理逻辑拆到不同适配器；设计器负责把页面配置转换为可编译的通讯类库源码。
 
-```
-├── CommunicateUtil\
-│   ├── CommunicateUtil.csproj     # SDK-style netstandard2.0 类库项目
-│   ├── BytesConverter.cs          # 核心字节转换工具类
-│   ├── CommunicateArrtibute.cs    # 通信特性类和相关工具
-│   ├── ReflectionEx.cs            # 反射扩展工具类
-│   ├── BytesDataAdapters\         # 各种数据适配器
-│   │   ├── ValueTypeAdapters\     # 值类型适配器
-│   │   ├── StringTypeAdapters\    # 字符串类型适配器
-│   │   ├── ArrayValueTypeAdapters\ # 数组类型适配器
-│   │   └── BaseCommObjAdapters\   # 通信对象适配器
-│   └── UiViewAdapter\             # UI视图适配器
-├── TestProject1\                  # 测试项目
-│   ├── _0_ValueTest.cs            # 基本数据类型测试
-│   ├── _1_ValueArrayTest.cs       # 数组类型测试
-│   ├── _2_ValueListTest.cs        # 列表类型测试
-│   ├── _3_CommArrObjTest.cs       # 通信对象测试
-│   ├── _4_CommArrObjTest.cs       # 高级通信对象测试1
-│   ├── _5_CommArrObjTest.cs       # 高级通信对象测试2
-│   └── ModbusRtuTest.cs           # 真实串口 Modbus RTU 集成测试
+```text
+communicate-util/
+├── README.md                                      # 仓库总说明，介绍核心库、设计器和测试入口
+├── CommunicateUtil食用指南.md                     # 核心库使用指南，适合先看示例再读源码
+├── CommunicateUtil/                               # 核心字节流编解码类库，目标框架 netstandard2.0
+│   ├── CommunicateUtil.csproj                     # 核心类库项目文件
+│   ├── BytesConverter.cs                          # 值类型、字符串、数组等基础字节转换入口
+│   ├── CommunicateArrtibute.cs                    # 字段编解码规则特性和字节序枚举
+│   ├── ValidCheckArrtibute.cs                     # 字段级校验特性
+│   ├── ReflectionEx.cs                            # 反射辅助扩展
+│   └── BytesDataAdapters/                         # 不同数据形态的编解码适配器
+│       ├── BaseCommObjAdapters/                   # 通讯对象整体编码、解码核心逻辑
+│       ├── ValueTypeAdapters/                     # 基础值类型和枚举适配器
+│       ├── StringTypeAdapters/                    # 字符串固定长度解析和编码适配器
+│       └── ArrayValueTypeAdapters/                # 数组、List 集合适配器
+├── CommunicateUtilDesigner/                       # Web 可视化通讯类库生成器
+│   ├── README.md                                  # 设计器文档入口
+│   ├── README_CODE.md                             # 面向开发者的结构、接口和开发说明
+│   ├── README_USER.md                             # 面向使用者的页面操作说明
+│   ├── src/                                       # 设计器源码
+│   │   ├── CommunicateUtil.Generator/             # 生成器类库，把配置模型转换为 C# 源码
+│   │   └── CommunicateUtil.Web/                   # ASP.NET Core MVC Web 页面和 SQLite 持久化
+│   └── tests/                                     # 生成器 xUnit 测试
+├── TestProject1/                                  # 核心库 xUnit 测试项目
+│   ├── _0_ValueTest.cs                            # 基础类型、字符串、枚举和字节序测试
+│   ├── _1_ValueArrayTest.cs                       # 数组编码解码测试
+│   ├── _2_ValueListTest.cs                        # List 集合编码解码测试
+│   ├── _3_CommArrObjTest.cs                       # 通讯对象基础场景测试
+│   ├── _4_CommArrObjTest.cs                       # 通讯对象复杂场景测试
+│   ├── _5_CommArrObjTest.cs                       # 通讯对象嵌套/扩展场景测试
+│   └── ModbusRtuTest.cs                           # 依赖真实串口设备的集成测试
+└── Test/                                          # 旧版控制台示例项目，主要用于手工调试或历史兼容
 ```
 
 ## 核心类介绍

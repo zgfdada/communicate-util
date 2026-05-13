@@ -1,6 +1,6 @@
 # CommunicateUtil Designer 使用者说明
 
-本文档面向使用 Web 页面配置和生成通讯类库源码的使用者。
+本文档面向使用 Web 页面配置和生成通讯类库源码的使用者，重点说明页面怎么填、生成后会得到什么。
 
 ## 这个工具做什么
 
@@ -236,6 +236,31 @@ CommunicateUtilDesigner/artifacts/generated/{ProjectName}
 - 示例文件
 - 配置 JSON
 - README
+
+### 生成结果目录结构
+
+如果选择“写入本地”，默认会输出到：
+
+```text
+CommunicateUtilDesigner/artifacts/generated/{ProjectName}
+```
+
+常见文件结构如下：
+
+```text
+{ProjectName}/                               # 生成出来的完整类库项目
+  {ProjectName}.csproj                       # 生成项目文件
+  README.md                                  # 生成项目说明
+  configuration.json                         # 当前协议配置摘要
+  Examples/                                  # 示例代码目录
+    {ProjectName}Example.cs                  # 默认编解码示例
+  Enums/                                     # 枚举代码目录
+    CommandType.cs                           # 枚举定义
+  Models/                                    # 通讯类代码目录
+    DeviceData.cs                            # 通讯类定义
+  Validation/                                # 校验方法目录
+    ProtocolValidationMethods.cs             # 自定义校验方法集合
+```
 
 ## 生成后的使用方式
 

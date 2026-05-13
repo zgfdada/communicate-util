@@ -4,6 +4,14 @@
 
 它用于通过浏览器配置命名空间、通讯类、字段、枚举和枚举值，并生成目标框架固定为 `netstandard2.0` 的 C# 通讯数据层类库源码。
 
+## 项目结构入口
+
+- [README_CODE.md](README_CODE.md)：面向代码工程师，说明源码结构、职责边界和验证方式。
+- [README_USER.md](README_USER.md)：面向使用者，说明页面顺序、字段规则和生成结果结构。
+- `src/CommunicateUtil.Generator/`：生成器核心类库。
+- `src/CommunicateUtil.Web/`：Web 设计器站点。
+- `tests/CommunicateUtil.Generator.Tests/`：生成器测试。
+
 ## 文档入口
 
 - [README_CODE.md](README_CODE.md)：面向代码工程师，说明项目结构、开发启动、生成器接口和验证方式。
@@ -20,4 +28,3 @@ dotnet run --project CommunicateUtilDesigner\src\CommunicateUtil.Web\Communicate
 ```text
 http://127.0.0.1:18057/
 ```
-
