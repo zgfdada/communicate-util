@@ -105,7 +105,7 @@ src/CommunicateUtil.Web/Data/DesignerEntities.cs
 - `CommClassEntity`：通讯类配置，生成类继承 `BaseCommunicateArrtObject`。
 - `CommFieldEntity`：字段配置，包含字段类型、具体类型、集合类型、Order、长度、字节序、备注等。
 - `EnumDefinitionEntity`：枚举定义，包含枚举名、底层类型、注释。
-- `EnumMemberEntity`：枚举值，包含成员名和值。
+- `EnumMemberEntity`：枚举值，包含成员名、值和注释。
 - `ValidationMethodEntity`：校验方法配置，当前页面隐藏但生成器仍支持。
 
 ## 字段生成规则
@@ -147,12 +147,15 @@ public byte DeviceId { get; set; }
 /// </summary>
 public enum CommandType : byte
 {
+    /// <summary>
+    /// 读取命令
+    /// </summary>
     Read = 1,
     Write = 2
 }
 ```
 
-枚举值按 `Value` 排序输出。
+枚举值按 `Value` 排序输出。枚举值注释会输出到成员上方的 XML summary。
 
 ## 顺序维护规则
 
@@ -237,4 +240,3 @@ obj/
 ```
 
 这些路径已由 `.gitignore` 覆盖。
-

@@ -114,10 +114,12 @@ namespace CommunicateUtil.Generator.Models
     {
         public string Name { get; set; }
         public long Value { get; set; }
+        public string Desc { get; set; }
 
         public EnumMemberSchema()
         {
             Name = string.Empty;
+            Desc = string.Empty;
         }
     }
 

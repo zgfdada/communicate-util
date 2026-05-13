@@ -150,6 +150,12 @@ namespace CommunicateUtil.Generator
             for (var i = 0; i < enumSchema.Members.Count; i++)
             {
                 var member = enumSchema.Members[i];
+                if (!string.IsNullOrWhiteSpace(member.Desc))
+                {
+                    sb.AppendLine("        /// <summary>");
+                    sb.AppendLine("        /// " + EscapeXml(member.Desc));
+                    sb.AppendLine("        /// </summary>");
+                }
                 sb.Append("        " + member.Name + " = " + member.Value.ToString(CultureInfo.InvariantCulture));
                 sb.AppendLine(i == enumSchema.Members.Count - 1 ? string.Empty : ",");
             }

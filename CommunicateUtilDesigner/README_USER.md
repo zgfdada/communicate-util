@@ -102,6 +102,7 @@ public class ClassName : BaseCommunicateArrtObject
 
 - 成员名：合法 C# 枚举成员名，例如 `Read`。
 - 值：枚举成员值。
+- 备注：生成到枚举项上方的 XML 注释。
 
 值的规则：
 
@@ -120,6 +121,15 @@ one = 1
 zero = 0
 Read = 1
 one = 2
+```
+
+如果给 `Read` 填写备注 `读取命令`，生成源码会包含：
+
+```csharp
+/// <summary>
+/// 读取命令
+/// </summary>
+Read = 1
 ```
 
 ## 4. 字段配置
@@ -262,4 +272,3 @@ var parsed = DeviceData.GetSelf<DeviceData>(bytes);
 ### 枚举值顺序变了
 
 这是预期行为。为了避免同一个枚举内出现重复值，当你把某个枚举值保存为已有值时，后面的值会自动后移。
-

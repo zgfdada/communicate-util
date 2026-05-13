@@ -67,6 +67,7 @@ public class EnumMemberEntity
     public int EnumId { get; set; }
     public string Name { get; set; } = string.Empty;
     public long Value { get; set; }
+    public string Desc { get; set; } = string.Empty;
 }
 
 [SugarTable("ValidationMethods")]

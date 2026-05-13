@@ -248,7 +248,7 @@ public sealed class DesignerRepository : IDesignerRepository
         entity.EnumId = existing.EnumId;
         await ShiftEnumMemberValuesAsync(entity.ProjectId, entity.EnumId, entity.Value, entity.Id);
         await _db.Updateable(entity)
-            .UpdateColumns(e => new { e.Name, e.Value })
+            .UpdateColumns(e => new { e.Name, e.Value, e.Desc })
             .Where(e => e.ProjectId == entity.ProjectId && e.Id == entity.Id)
             .ExecuteCommandAsync();
         await TouchProjectAsync(entity.ProjectId);
@@ -308,7 +308,7 @@ public sealed class DesignerRepository : IDesignerRepository
                 Desc = enumEntity.Desc,
                 Members = workspace.EnumMembers
                     .Where(m => m.EnumId == enumEntity.Id)
-                    .Select(m => new EnumMemberSchema { Name = m.Name, Value = m.Value })
+                    .Select(m => new EnumMemberSchema { Name = m.Name, Value = m.Value, Desc = m.Desc })
                     .ToList()
             });
         }
@@ -470,6 +470,7 @@ public sealed class DesignerRepository : IDesignerRepository
     private static void NormalizeEnumMember(EnumMemberEntity entity)
     {
         entity.Name = (entity.Name ?? string.Empty).Trim();
+        entity.Desc = entity.Desc ?? string.Empty;
     }
 
     private static string ResolveAutoLengthType(FieldCollectionKind collectionKind, string arrayLength)

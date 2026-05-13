@@ -505,6 +505,7 @@
                             <th style="width:72px;">编号</th>
                             <th>成员名</th>
                             <th style="width:140px;">值</th>
+                            <th>备注</th>
                             <th style="width:96px;">操作</th>
                         </tr>
                     </thead>
@@ -516,6 +517,7 @@
                             <td class="text-muted">@(i + 1)</td>
                             <td><input form="enum-member-edit-@member.Id" class="form-control form-control-sm" name="Name" value="@member.Name" /></td>
                             <td><input form="enum-member-edit-@member.Id" class="form-control form-control-sm" type="number" name="Value" value="@member.Value" /></td>
+                            <td><input form="enum-member-edit-@member.Id" class="form-control form-control-sm" name="Desc" value="@member.Desc" placeholder="生成到枚举项注释" /></td>
                             <td>
                                 <div class="field-actions">
                                     <form id="enum-member-edit-@member.Id" asp-action="UpdateEnumMember" method="post">
@@ -543,6 +545,7 @@
                             <td>新增</td>
                             <td><input class="form-control form-control-sm" name="Name" form="add-enum-member-form" placeholder="Read" /></td>
                             <td><input class="form-control form-control-sm" type="number" name="Value" form="add-enum-member-form" value="@nextEnumMemberValue" /></td>
+                            <td><input class="form-control form-control-sm" name="Desc" form="add-enum-member-form" placeholder="生成到枚举项注释" /></td>
                             <td><button class="icon-btn add" type="submit" form="add-enum-member-form" title="添加枚举值" @(selectedEnum == null ? "disabled" : "")>+</button></td>
                         </tr>
                     </tbody>

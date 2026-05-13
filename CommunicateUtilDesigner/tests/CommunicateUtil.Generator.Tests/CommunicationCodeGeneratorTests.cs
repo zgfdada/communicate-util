@@ -32,7 +32,7 @@ public class CommunicationCodeGeneratorTests
             Desc = "命令类型",
             Members =
             {
-                new EnumMemberSchema { Name = "Read", Value = 1 },
+                new EnumMemberSchema { Name = "Read", Value = 1, Desc = "读取命令" },
                 new EnumMemberSchema { Name = "Write", Value = 2 }
             }
         });
@@ -89,6 +89,7 @@ public class CommunicationCodeGeneratorTests
         Assert.Contains("[ValidCheckArrtibute(\"DeviceProtocolModels\", \"ValidatePoints\")]", classFile);
         var enumFile = result.Files.Single(f => f.Path == "Enums/CommandType.cs").Content;
         Assert.Contains("/// 命令类型", enumFile);
+        Assert.Contains("/// 读取命令", enumFile);
         Assert.Contains("Validation/ProtocolValidationMethods.cs", result.Files.Select(f => f.Path));
         Assert.NotEmpty(result.ZipBytes);
     }
@@ -138,7 +139,7 @@ public class CommunicationCodeGeneratorTests
             Desc = "命令类型",
             Members =
             {
-                new EnumMemberSchema { Name = "Read", Value = 1 }
+                new EnumMemberSchema { Name = "Read", Value = 1, Desc = "读取命令" }
             }
         });
 
@@ -148,6 +149,7 @@ public class CommunicationCodeGeneratorTests
         var file = Assert.Single(result.Files);
         Assert.Equal("Enums/CommandType.cs", file.Path);
         Assert.Contains("/// 命令类型", file.Content);
+        Assert.Contains("/// 读取命令", file.Content);
         Assert.Contains("public enum CommandType : byte", file.Content);
     }
 
